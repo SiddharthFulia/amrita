@@ -130,18 +130,43 @@ export default function Sidebar({ collapsed, onToggle, isMobile = false, mobileO
         )}
 
         {collapsed && !isMobile && (
-          <div
+          <button
+            onClick={onToggle}
+            title="Expand sidebar"
             style={{
-              fontSize: '22px',
-              filter: 'drop-shadow(0 0 8px rgba(233,30,140,0.8))',
-              animation: 'heart-beat 2s ease-in-out infinite',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '4px',
             }}
           >
-            ♥
-          </div>
+            <span
+              style={{
+                fontSize: '22px',
+                filter: 'drop-shadow(0 0 8px rgba(233,30,140,0.8))',
+                animation: 'heart-beat 2s ease-in-out infinite',
+              }}
+            >
+              ♥
+            </span>
+            <span
+              style={{
+                fontSize: '10px',
+                color: 'rgba(255,255,255,0.25)',
+                fontFamily: "'Inter', sans-serif",
+                letterSpacing: '0.05em',
+              }}
+            >
+              ›
+            </span>
+          </button>
         )}
 
-        {/* Collapse toggle — desktop only */}
+        {/* Collapse toggle — desktop only, shown when expanded */}
         {!isMobile && !collapsed && (
           <button
             onClick={onToggle}

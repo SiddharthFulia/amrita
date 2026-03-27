@@ -53,6 +53,128 @@ export default function LoveNotesPage() {
         </p>
       </div>
 
+      {/* ── Siddharth's special golden quote ── */}
+      <div style={{ maxWidth: '680px', margin: '0 auto 64px' }}>
+        <div
+          style={{
+            position: 'relative',
+            padding: '44px 48px',
+            background: 'linear-gradient(135deg, rgba(255,215,0,0.07) 0%, rgba(255,193,7,0.04) 100%)',
+            border: '1px solid rgba(255,215,0,0.3)',
+            borderRadius: '24px',
+            backdropFilter: 'blur(20px)',
+            overflow: 'hidden',
+            textAlign: 'center',
+          }}
+        >
+          {/* Gold top line */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: '15%',
+              right: '15%',
+              height: '2px',
+              background: 'linear-gradient(90deg, transparent, #ffd700, #fff9c4, #ffd700, transparent)',
+            }}
+          />
+
+          {/* Corner sparkles */}
+          <div style={{ position: 'absolute', top: '16px', left: '20px', fontSize: '14px', opacity: 0.5 }}>✦</div>
+          <div style={{ position: 'absolute', top: '16px', right: '20px', fontSize: '14px', opacity: 0.5 }}>✦</div>
+          <div style={{ position: 'absolute', bottom: '16px', left: '20px', fontSize: '10px', opacity: 0.3 }}>✦</div>
+          <div style={{ position: 'absolute', bottom: '16px', right: '20px', fontSize: '10px', opacity: 0.3 }}>✦</div>
+
+          {/* Label */}
+          <div
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: '10px',
+              fontWeight: 700,
+              letterSpacing: '0.2em',
+              textTransform: 'uppercase',
+              color: 'rgba(255,215,0,0.5)',
+              marginBottom: '20px',
+            }}
+          >
+            ✦ why I love you ✦
+          </div>
+
+          {/* Setup line */}
+          <p
+            style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontStyle: 'italic',
+              fontSize: '15px',
+              color: 'rgba(255,255,255,0.35)',
+              marginBottom: '24px',
+              lineHeight: 1.6,
+            }}
+          >
+            Most people love for a reason — and that's exactly the problem.
+          </p>
+
+          {/* Big decorative quote mark */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '24px',
+              left: '28px',
+              fontFamily: "'Playfair Display', serif",
+              fontSize: '72px',
+              lineHeight: 1,
+              color: 'rgba(255,215,0,0.08)',
+              userSelect: 'none',
+              pointerEvents: 'none',
+            }}
+          >
+            "
+          </div>
+
+          <p
+            style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontStyle: 'italic',
+              fontSize: 'clamp(18px, 2.5vw, 24px)',
+              fontWeight: 500,
+              lineHeight: 1.65,
+              background: 'linear-gradient(135deg, #ffd700 0%, #fff9c4 50%, #ffd700 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              position: 'relative',
+              zIndex: 1,
+              margin: 0,
+            }}
+          >
+            "If you love someone for a reason, the love dies when the reason does."
+          </p>
+
+          <div
+            style={{
+              marginTop: '20px',
+              fontFamily: "'Dancing Script', cursive",
+              fontSize: '16px',
+              color: 'rgba(255,215,0,0.55)',
+            }}
+          >
+            — Siddharth
+          </div>
+
+          {/* Gold bottom line */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: '15%',
+              right: '15%',
+              height: '1px',
+              background: 'linear-gradient(90deg, transparent, rgba(255,215,0,0.3), transparent)',
+            }}
+          />
+        </div>
+      </div>
+
       {/* Featured rotating quote */}
       <div style={{ maxWidth: '760px', margin: '0 auto 80px' }}>
         <div
@@ -152,21 +274,6 @@ export default function LoveNotesPage() {
                 {quote.text}
               </p>
 
-              <div
-                style={{
-                  fontFamily: "'Dancing Script', cursive",
-                  fontSize: '14px',
-                  color: index % 3 === 0
-                    ? 'rgba(233,30,140,0.7)'
-                    : index % 3 === 1
-                    ? 'rgba(179,136,255,0.7)'
-                    : 'rgba(255,215,0,0.6)',
-                  position: 'relative',
-                  zIndex: 1,
-                }}
-              >
-                — {quote.author}
-              </div>
             </div>
           ))}
         </div>

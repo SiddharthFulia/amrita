@@ -4,8 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import CountdownTimer from '@/components/CountdownTimer/CountdownTimer';
 import { SURPRISE_DATE } from '@/constants/content';
 
-const LS_KEY = 'amrita_date_override';
-
 const SEALED_MESSAGE = `My dearest Amrita,
 
 If you're reading this, it means today is the day — 12th May 2026.
@@ -118,7 +116,7 @@ function SurpriseRevealed() {
               backgroundClip: 'text',
             }}
           >
-            Happy 12th May, Amrita ♥
+            Happy Birthday, Amrita ♥
           </div>
         </div>
       )}
@@ -147,152 +145,16 @@ function SurpriseRevealed() {
   );
 }
 
-function AdminDateOverride({ onClose, onSave }) {
-  const [dateValue, setDateValue] = useState(
-    SURPRISE_DATE.toISOString().slice(0, 16)
-  );
-
-  const handleSave = () => {
-    const newDate = new Date(dateValue);
-    if (!isNaN(newDate.getTime())) {
-      localStorage.setItem(LS_KEY, newDate.toISOString());
-      onSave(newDate);
-      onClose();
-    }
-  };
-
-  const handleReset = () => {
-    localStorage.removeItem(LS_KEY);
-    onSave(null);
-    onClose();
-  };
-
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.7)',
-        zIndex: 200,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backdropFilter: 'blur(8px)',
-      }}
-      onClick={onClose}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: '#0d0d2b',
-          border: '1px solid rgba(233,30,140,0.3)',
-          borderRadius: '20px',
-          padding: '36px',
-          width: '340px',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "'Dancing Script', cursive",
-            fontSize: '20px',
-            color: 'rgba(255,255,255,0.6)',
-            marginBottom: '6px',
-          }}
-        >
-          🔧 Date Override
-        </div>
-        <div
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: '12px',
-            color: 'rgba(255,255,255,0.3)',
-            marginBottom: '20px',
-          }}
-        >
-          Set a custom unlock date for testing. Stored in localStorage only.
-        </div>
-
-        <input
-          type="datetime-local"
-          value={dateValue}
-          onChange={e => setDateValue(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '10px 14px',
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(233,30,140,0.25)',
-            borderRadius: '10px',
-            color: '#fff',
-            fontFamily: "'Inter', sans-serif",
-            fontSize: '14px',
-            marginBottom: '16px',
-            outline: 'none',
-          }}
-        />
-
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button
-            onClick={handleSave}
-            style={{
-              flex: 1,
-              padding: '10px',
-              background: 'linear-gradient(135deg, #e91e8c, #b388ff)',
-              border: 'none',
-              borderRadius: '10px',
-              color: '#fff',
-              fontFamily: "'Inter', sans-serif",
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
-          >
-            Set Date
-          </button>
-          <button
-            onClick={handleReset}
-            style={{
-              flex: 1,
-              padding: '10px',
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              borderRadius: '10px',
-              color: 'rgba(255,255,255,0.5)',
-              fontFamily: "'Inter', sans-serif",
-              fontSize: '13px',
-              cursor: 'pointer',
-            }}
-          >
-            Reset to Real Date
-          </button>
-        </div>
-
-        <div
-          style={{
-            marginTop: '12px',
-            fontFamily: "'Inter', sans-serif",
-            fontSize: '11px',
-            color: 'rgba(255,255,255,0.2)',
-            textAlign: 'center',
-          }}
-        >
-          Real date: {SURPRISE_DATE.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function LockedView({ tapCount, onTap }) {
   return (
     <div style={{ textAlign: 'center' }}>
-      {/* Tappable envelope — 5 taps opens admin panel */}
+      {/* Tap envelope 5 times to unlock */}
       <div
         style={{
           position: 'relative',
           display: 'inline-block',
           marginBottom: '48px',
-          cursor: 'default',
+          cursor: 'pointer',
           userSelect: 'none',
         }}
         onClick={onTap}
@@ -303,7 +165,6 @@ function LockedView({ tapCount, onTap }) {
             animation: 'float-slow 6s ease-in-out infinite',
             filter: 'drop-shadow(0 0 30px rgba(233,30,140,0.5))',
             display: 'block',
-            transition: 'transform 0.1s ease',
           }}
         >
           💌
@@ -320,7 +181,7 @@ function LockedView({ tapCount, onTap }) {
           }}
         />
 
-        {/* Subtle tap progress dots — only show after first tap */}
+        {/* Tap progress dots — appear after first tap */}
         {tapCount > 0 && (
           <div
             style={{
@@ -430,70 +291,40 @@ function LockedView({ tapCount, onTap }) {
 
 export default function SurprisePage() {
   const [isSurpriseTime, setIsSurpriseTime] = useState(false);
+  const [manuallyUnlocked, setManuallyUnlocked] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [tapCount, setTapCount] = useState(0);
-  const [overrideDate, setOverrideDate] = useState(null);
   const tapTimerRef = useRef(null);
 
-  const effectiveDate = overrideDate || SURPRISE_DATE;
+  const isRevealed = manuallyUnlocked || isSurpriseTime;
 
   useEffect(() => {
     setMounted(true);
-
-    // Check for stored override date
-    try {
-      const stored = localStorage.getItem(LS_KEY);
-      if (stored) {
-        const parsedDate = new Date(stored);
-        if (!isNaN(parsedDate.getTime())) {
-          setOverrideDate(parsedDate);
-        }
-      }
-    } catch {
-      // localStorage not available
-    }
   }, []);
 
   useEffect(() => {
     if (!mounted) return;
-
-    const checkTime = () => {
-      const now = new Date();
-      setIsSurpriseTime(now >= effectiveDate);
-    };
+    const checkTime = () => setIsSurpriseTime(new Date() >= SURPRISE_DATE);
     checkTime();
     const intervalId = setInterval(checkTime, 2000);
     return () => clearInterval(intervalId);
-  }, [mounted, effectiveDate]);
+  }, [mounted]);
 
   const handleEnvelopeTap = () => {
     setTapCount(prev => {
       const next = prev + 1;
       if (next >= 5) {
-        setShowAdminPanel(true);
+        setManuallyUnlocked(true);
         return 0;
       }
-      // Reset tap count after 2s of no tapping
       clearTimeout(tapTimerRef.current);
       tapTimerRef.current = setTimeout(() => setTapCount(0), 2000);
       return next;
     });
   };
 
-  const handleOverrideSave = (newDate) => {
-    setOverrideDate(newDate);
-  };
-
   return (
     <div style={{ minHeight: '100vh', padding: '60px 40px 80px' }}>
-
-      {showAdminPanel && (
-        <AdminDateOverride
-          onClose={() => setShowAdminPanel(false)}
-          onSave={handleOverrideSave}
-        />
-      )}
 
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '70px' }}>
@@ -537,29 +368,6 @@ export default function SurprisePage() {
         >
           Planned with love, waiting just for you.
         </p>
-
-        {/* Subtle override indicator — only visible if an override is active */}
-        {overrideDate && (
-          <div
-            style={{
-              marginTop: '12px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '4px 12px',
-              background: 'rgba(255,215,0,0.08)',
-              border: '1px solid rgba(255,215,0,0.2)',
-              borderRadius: '20px',
-              fontFamily: "'Inter', sans-serif",
-              fontSize: '11px',
-              color: 'rgba(255,215,0,0.6)',
-              cursor: 'pointer',
-            }}
-            onClick={() => setShowAdminPanel(true)}
-          >
-            🔧 Override active — tap to change
-          </div>
-        )}
       </div>
 
       {/* Content */}
@@ -576,7 +384,7 @@ export default function SurprisePage() {
               💌
             </div>
           </div>
-        ) : isSurpriseTime ? (
+        ) : isRevealed ? (
           <SurpriseRevealed />
         ) : (
           <LockedView tapCount={tapCount} onTap={handleEnvelopeTap} />

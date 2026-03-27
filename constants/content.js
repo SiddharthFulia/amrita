@@ -137,8 +137,7 @@ export const TIMELINE_EVENTS = [
 ];
 
 export const LITTLE_THINGS = [
-  { emoji: "😂", text: "The way you laugh at your own jokes before finishing them" },
-  { emoji: "✨", text: "How you make every ordinary moment feel like an adventure" },
+{ emoji: "✨", text: "How you make every ordinary moment feel like an adventure" },
   { emoji: "☀️", text: "Your smile that genuinely lights up the whole room" },
   { emoji: "🎵", text: "The little songs you hum when you don't notice you're doing it" },
   { emoji: "🌟", text: "How you always know exactly the right thing to say" },

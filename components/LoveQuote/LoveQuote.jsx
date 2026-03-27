@@ -59,15 +59,6 @@ export default function LoveQuote({ compact = false }) {
         >
           "{currentQuote.text}"
         </p>
-        <p
-          style={{
-            fontFamily: "'Dancing Script', cursive",
-            fontSize: '14px',
-            color: 'rgba(233,30,140,0.7)',
-          }}
-        >
-          — {currentQuote.author}
-        </p>
       </div>
     );
   }
@@ -156,18 +147,6 @@ export default function LoveQuote({ compact = false }) {
           }}
         >
           {currentQuote.text}
-        </p>
-        <p
-          style={{
-            fontFamily: "'Dancing Script', cursive",
-            fontSize: '18px',
-            color: '#e91e8c',
-            textAlign: 'center',
-            position: 'relative',
-            zIndex: 1,
-          }}
-        >
-          — {currentQuote.author}
         </p>
       </div>
 
