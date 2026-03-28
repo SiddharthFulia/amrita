@@ -103,7 +103,7 @@ function SurpriseRevealed() {
         )}
       </pre>
 
-      {charIndex >= SEALED_MESSAGE.length && (
+      {(showAll || charIndex >= SEALED_MESSAGE.length) && (
         <div style={{ textAlign: 'center', marginTop: '32px' }}>
           <div
             style={{

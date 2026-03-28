@@ -30,6 +30,12 @@ const navItems = [
     sublabel: 'What I love about you',
   },
   {
+    href: '/gallery',
+    emoji: '📸',
+    label: 'Gallery',
+    sublabel: 'Our photos',
+  },
+  {
     href: '/surprise',
     emoji: '🎁',
     label: '12 May Surprise',
