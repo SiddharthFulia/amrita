@@ -36,6 +36,42 @@ const navItems = [
     sublabel: 'Our photos',
   },
   {
+    href: '/games',
+    emoji: '🎮',
+    label: 'Games',
+    sublabel: 'Play with me',
+  },
+  {
+    href: '/cats',
+    emoji: '🐱',
+    label: 'Cats',
+    sublabel: 'For you, always',
+  },
+  {
+    href: '/saved-cats',
+    emoji: '🐾',
+    label: 'Saved Cats',
+    sublabel: "Amrita's collection",
+  },
+  {
+    href: '/tinkerbell',
+    emoji: '🐈',
+    label: 'Tinkerbell',
+    sublabel: 'Her photos ♥',
+  },
+  {
+    href: '/comfort',
+    emoji: '🫂',
+    label: 'Comfort Corner',
+    sublabel: 'For hard days',
+  },
+  {
+    href: '/gem',
+    emoji: '💎',
+    label: 'Your Gem',
+    sublabel: 'Growth & glow',
+  },
+  {
     href: '/surprise',
     emoji: '🎁',
     label: '12 May Surprise',
