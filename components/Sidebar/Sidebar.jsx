@@ -113,6 +113,7 @@ export default function Sidebar({ collapsed, onToggle, isMobile = false, mobileO
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
+        minHeight: 0,
         boxShadow: isMobile && mobileOpen ? '4px 0 40px rgba(0,0,0,0.5)' : 'none',
       }}
     >
@@ -234,7 +235,7 @@ export default function Sidebar({ collapsed, onToggle, isMobile = false, mobileO
       </div>
 
       {/* Nav items */}
-      <nav style={{ flex: 1, padding: '12px 0', overflowY: 'auto', overflowX: 'hidden' }}>
+      <nav style={{ flex: 1, minHeight: 0, padding: '12px 0', overflowY: 'auto', overflowX: 'hidden', scrollbarWidth: 'thin', scrollbarColor: 'rgba(233,30,140,0.3) transparent' }}>
         {(!collapsed || isMobile) && (
           <div
             style={{
