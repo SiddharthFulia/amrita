@@ -150,11 +150,30 @@ export default function SnakePage() {
         ctx.restore();
       }
 
-      // Food
-      ctx.font = `${CELL}px serif`;
+      // Food — glowing background + larger emoji + point label
+      const fx = g.food.x * CELL + CELL / 2;
+      const fy = g.food.y * CELL + CELL / 2;
+      const foodGlow = g.food.pts === 1 ? '#ff4081' : g.food.pts === 3 ? '#ffd740' : '#ce93d8';
+      const foodGrad = ctx.createRadialGradient(fx, fy, 0, fx, fy, CELL);
+      foodGrad.addColorStop(0, foodGlow + '70');
+      foodGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = foodGrad;
+      ctx.beginPath(); ctx.arc(fx, fy, CELL, 0, Math.PI * 2); ctx.fill();
+      // outer ring glow
+      ctx.strokeStyle = foodGlow + '50';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(fx, fy, CELL - 1, 0, Math.PI * 2); ctx.stroke();
+      // emoji
+      ctx.font = `${CELL + 6}px serif`;
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'center';
-      ctx.fillText(g.food.emoji, g.food.x * CELL + CELL / 2, g.food.y * CELL + CELL / 2);
+      ctx.fillText(g.food.emoji, fx, fy);
+      // point label top-right
+      ctx.font = `bold 10px Inter, sans-serif`;
+      ctx.fillStyle = foodGlow;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(`+${g.food.pts}`, fx + 7, fy - 13);
 
       // Particles
       particles.current = particles.current.filter(p => p.life > 0);
@@ -250,7 +269,13 @@ export default function SnakePage() {
           </div>
         )}
       </div>
-      <div style={{ marginTop: '12px', color: 'rgba(255,255,255,0.35)', fontSize: '0.8rem', textAlign: 'center' }}>
+      {/* Food legend */}
+      <div style={{ marginTop: '10px', display: 'flex', gap: '20px', fontSize: '13px' }}>
+        <span style={{ color: '#ff4081' }}>❤️ <b>+1</b></span>
+        <span style={{ color: '#ffd740' }}>💛 <b>+3</b></span>
+        <span style={{ color: '#ce93d8' }}>💝 <b>+5</b></span>
+      </div>
+      <div style={{ marginTop: '8px', color: 'rgba(255,255,255,0.35)', fontSize: '0.8rem', textAlign: 'center' }}>
         Arrow keys / WASD / Swipe to move
       </div>
     </div>

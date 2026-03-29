@@ -12,7 +12,7 @@ const POOL = {
     'WISP','LARK','BOON','FAWN','JADE','VALE','SUNG','TAME','TINT','WRAP',
     'SOUL','SAGE','BLEW','NEST','GUST','ZEST','LUSH','DEWY','POSH','AIRY',
     'BASK','BEAM','ZING','FIZZ','HAZY','NOOK','PURL','RIME','TUFT','WAFT',
-    'LIMY','BRIM','DOTE','ENVY','FOND','HEED','HALO','IDYL','JEST','KNIT',
+    'LIMY','BRIM','DOTE','ENVY','FLUX','HEED','HALO','IDYL','JEST','KNIT',
   ],
   5: [
     'HEART','ROSES','LOVER','SWEET','BLISS','ANGEL','HONEY','MAGIC','PEACE','SMILE',
@@ -25,21 +25,21 @@ const POOL = {
     'LYRIC','RHYME','VERSE','KITTY','BUNNY','FUZZY','DOWNY','SILKY','BERRY','MANGO',
     'PANSY','POPPY','VIOLA','BENCH','GROVE','GLADE','SHORE','CLIFF','DUNES','VILLA',
     'EMBER','FROST','GLINT','JEWEL','KARMA','LAPIS','PRISM','QUILL','SABLE','TAFFY',
-    'VIVID','WISPY','YIELD','AZURE','BLAZE','CRISP','DELTA','IVORY','MUTED','OMBRE',
-    'DUSKY','GLOWY','PERKY','LEAFY','CRIMP','SWOON','AMOUR','DOTES','FLAIR','LUNAR',
+    'FLOWY','WISPY','YIELD','AZURE','BLAZE','CRISP','DELTA','IRONY','MUTED','OMBRE',
+    'DUSKY','GLOWY','PERKY','LEAFY','CRIMP','SWOON','AMOUR','DOTES','FLAIR','LUCID',
   ],
   6: [
     'BEAUTY','CUDDLE','DAINTY','GOLDEN','GENTLE','HARBOR','HEAVEN','JOYFUL','LOVELY','MELLOW',
     'MYSTIC','PETALS','SERENE','SILKEN','TENDER','VELVET','WARMTH','BREEZE','CANDLE','CASTLE',
     'COSMOS','CRADLE','DEARLY','DIVINE','DREAMY','EARTHY','ELATED','FAIRLY','FLORAL','FLUFFY',
-    'GARDEN','GILDED','HUSHED','JOYOUS','KINDLY','LAVISH','LOVING','MYSTIC','RADIAL','SAVORY',
+    'GARDEN','GILDED','HUSHED','JOYOUS','KINDLY','LAVISH','LOVING','COBALT','RADIAL','SAVORY',
     'SOFTEN','SOLACE','STARRY','SUNLIT','SUNSET','THATCH','VELOUR','WANDER','WISTLY','ZONING',
     'BLITHE','BONNIE','CHERUB','CLOVER','COAXED','DOTING','FEISTY','FROTHY','GROOVY','HEARTY',
     'HOMELY','LIVELY','MARBLE','MIRROR','NESTLE','NIMBLE','PEACHY','PURPLE','QUAINT','REVERE',
     'RIBBON','RIPPLE','ROOTED','RUSTIC','SACRED','SILVER','SIMPLE','SLEEPY','SPRING','STEAMY',
-    'STORMY','SUBTLE','SUPPLE','TENDER','TROPIC','TUSCAN','UNIQUE','UPBEAT','VELVET','VIVACE',
-    'WALNUT','WILLOW','WONDER','YELLOW','ZENITH','ZEPHYR','BLOSSOM','BEACON','BOTANY','BREEZY',
-    'CITRUS','DAMASK','ELFIN','FERVID','FLORET','GOBLET','GRACED','GRASSY','HEARTH','HILLTOP',
+    'STORMY','SUBTLE','SUPPLE','TANGLE','TROPIC','TUSCAN','UNIQUE','UPBEAT','SPROUT','VIVACE',
+    'WALNUT','WILLOW','WONDER','YELLOW','ZENITH','ZEPHYR','BOUNTY','BEACON','BOTANY','BREEZY',
+    'CITRUS','DAMASK','ELFISH','FERVID','FLORET','GOBLET','GRACED','GRASSY','HEARTH','HERALD',
     'HOLLOW','HUSTLE','ICONIC','INLAID','JOVIAL','KERNEL','LOCKET','LUSTER','MANTLE','MEADOW',
   ],
 };
@@ -137,7 +137,7 @@ export default function WordlePage() {
   const [shake, setShake] = useState(false);
   const [errMsg, setErrMsg] = useState('');
   const [confetti, setConfetti] = useState([]);
-  const [reveal, setReveal] = useState(false);
+  const [revealedRows, setRevealedRows] = useState(new Set());
 
   const startLevel = useCallback((id) => {
     const l = LEVELS.find(x => x.id === id);
@@ -145,7 +145,7 @@ export default function WordlePage() {
     setLvl(l);
     setTarget(t);
     setLevelId(id);
-    setRow(0); setCol(0); setGameOver(false); setShake(false); setErrMsg(''); setConfetti([]); setReveal(false);
+    setRow(0); setCol(0); setGameOver(false); setShake(false); setErrMsg(''); setConfetti([]); setRevealedRows(new Set());
     setGuesses(Array.from({ length: l.attempts }, () => ({ letters: Array(l.letters).fill(''), states: Array(l.letters).fill('empty'), locked: false })));
   }, []);
 
@@ -184,23 +184,25 @@ export default function WordlePage() {
     }
 
     const states = evalGuess(word, target);
-    setReveal(true);
-    setTimeout(() => setReveal(false), lvl.letters * 120 + 300);
+    const flipDone = lvl.letters * 120 + 350;
+    const lockedRow = row;
 
     setGuesses(prev => {
       const next = prev.map(g => ({ ...g, letters: [...g.letters], states: [...g.states] }));
-      next[row].states = states;
-      next[row].locked = true;
+      next[lockedRow].states = states;
+      next[lockedRow].locked = true;
       return next;
     });
+    // reveal colors only after each tile has flipped past its midpoint
+    setTimeout(() => setRevealedRows(prev => new Set([...prev, lockedRow])), flipDone);
 
     if (word === target) {
       setTimeout(() => {
         setGameOver('win');
         setConfetti(Array.from({ length: 32 }, (_, i) => ({ id: i, x: Math.random() * 100, delay: Math.random() * 1.2, emoji: ['💕','💖','✨','🌸','💝','🌟'][i % 6] })));
-      }, lvl.letters * 120 + 400);
+      }, flipDone + 200);
     } else if (row === lvl.attempts - 1) {
-      setTimeout(() => setGameOver('lose'), lvl.letters * 120 + 400);
+      setTimeout(() => setGameOver('lose'), flipDone + 200);
     } else {
       setRow(r => r + 1);
       setCol(0);
@@ -267,7 +269,12 @@ export default function WordlePage() {
         @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.18)} 100%{transform:scale(1)} }
         @keyframes shakeRow { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 60%{transform:translateX(8px)} 80%{transform:translateX(-4px)} }
         @keyframes fallDown { 0%{transform:translateY(-30px) scale(1.2);opacity:1} 100%{transform:translateY(110vh) rotate(540deg);opacity:0} }
-        @keyframes flipTile { 0%{transform:rotateX(0)} 50%{transform:rotateX(-90deg)} 100%{transform:rotateX(0)} }
+        @keyframes flipReveal {
+          0%   { transform:rotateX(0deg); background:rgba(255,255,255,0.04); border-color:rgba(255,255,255,0.12); }
+          48%  { transform:rotateX(-90deg); background:rgba(255,255,255,0.04); border-color:rgba(255,255,255,0.12); }
+          52%  { transform:rotateX(-90deg); background:var(--result); border-color:transparent; }
+          100% { transform:rotateX(0deg); background:var(--result); border-color:transparent; }
+        }
         @keyframes errPop { 0%{transform:translateX(-50%) scale(0.8);opacity:0} 20%{transform:translateX(-50%) scale(1.05);opacity:1} 80%{opacity:1} 100%{opacity:0} }
       `}</style>
 
@@ -311,16 +318,33 @@ export default function WordlePage() {
           <div key={r} style={{ display: 'flex', gap: '5px', animation: shake && r === row ? 'shakeRow 0.45s ease' : 'none' }}>
             {g.letters.map((letter, c) => {
               const state = g.states[c];
-              const bg = TILE_BG[state] || TILE_BG.empty;
-              const border = state === 'active' ? `2px solid ${lvl.color}90` : state === 'empty' ? '2px solid rgba(255,255,255,0.1)' : '2px solid transparent';
-              const anim = g.locked && letter ? `flipTile 0.35s ease ${c * 0.1}s both` : (!g.locked && letter) ? 'pop 0.12s ease' : 'none';
+              const isAnimating = g.locked && !revealedRows.has(r);
+              const isRevealed = g.locked && revealedRows.has(r);
+
+              let bg, border, anim, cssVars = {};
+              if (isAnimating) {
+                bg = 'rgba(255,255,255,0.04)';
+                border = '2px solid rgba(255,255,255,0.12)';
+                anim = `flipReveal 0.32s ease ${c * 120}ms both`;
+                cssVars = { '--result': TILE_BG[state] || TILE_BG.absent };
+              } else if (isRevealed) {
+                bg = TILE_BG[state] || TILE_BG.absent;
+                border = '2px solid transparent';
+                anim = 'none';
+              } else {
+                bg = TILE_BG[state] || TILE_BG.empty;
+                border = state === 'active' ? `2px solid ${lvl.color}90` : '2px solid rgba(255,255,255,0.12)';
+                anim = letter && !g.locked ? 'pop 0.12s ease' : 'none';
+              }
+
               return (
                 <div key={c} style={{
                   width: tileSize, height: tileSize,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   background: bg, border, borderRadius: '8px',
                   fontSize: tileSize >= 56 ? '1.5rem' : '1.25rem', fontWeight: 700, color: '#fff',
-                  animation: anim, transition: 'background 0.25s',
+                  animation: anim,
+                  ...cssVars,
                 }}>{letter}</div>
               );
             })}
