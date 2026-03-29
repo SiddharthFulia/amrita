@@ -61,7 +61,7 @@ const THEMES = {
 // pairChance = probability a spawn cycle drops 2 characters at once
 const DIFFICULTIES = {
   easy:   { label: 'Easy',   emoji: '🌸', maxActive: 2, spawnMs: 1100, hideMs: 1400, hasBad: false, pairChance: 0,    desc: 'Slow · 1 at a time' },
-  medium: { label: 'Medium', emoji: '⚡', maxActive: 5, spawnMs: 750,  hideMs: 950,  hasBad: false, pairChance: 0.35, desc: 'Pairs sometimes · no bad guys' },
+  medium: { label: 'Medium', emoji: '⚡', maxActive: 5, spawnMs: 950,  hideMs: 1150, hasBad: false, pairChance: 0.35, desc: 'Pairs sometimes · no bad guys' },
   hard:   { label: 'Hard',   emoji: '🔥', maxActive: 6, spawnMs: 700,  hideMs: 900,  hasBad: true,  pairChance: 0.6,  desc: 'Pairs often · bad guys! · use all fingers 🤚' },
 };
 
@@ -120,7 +120,7 @@ export default function MolePage() {
         && active + 2 <= diff.maxActive;
 
       const slots = spawnTwo ? [emptyIdxs[0], emptyIdxs[1]] : [emptyIdxs[0]];
-      const hideTime = Math.max(400, diff.hideMs - Math.floor(scoreRef.current / 20) * 25);
+      const hideTime = Math.max(450, diff.hideMs - Math.floor(scoreRef.current / 30) * 20);
       const now = Date.now();
       const next = [...prev];
 
@@ -169,7 +169,7 @@ export default function MolePage() {
     const doSpawn = () => {
       spawnChar();
       const diff = DIFFICULTIES[diffKey];
-      const nextMs = Math.max(220, diff.spawnMs - Math.floor(scoreRef.current / 25) * 40);
+      const nextMs = Math.max(400, diff.spawnMs - Math.floor(scoreRef.current / 35) * 25);
       spawnTimer.current = setTimeout(doSpawn, nextMs);
     };
     spawnTimer.current = setTimeout(doSpawn, 350);
