@@ -72,8 +72,9 @@ export default function SnakePage() {
       const head = g.snake[0];
       const next = { x: head.x + dirRef.current.x, y: head.y + dirRef.current.y };
 
-      // Wall
-      if (next.x < 0 || next.x >= COLS || next.y < 0 || next.y >= ROWS) { die(g); return; }
+      // Wrap-around walls: exit one side → reappear on the other
+      next.x = (next.x + COLS) % COLS;
+      next.y = (next.y + ROWS) % ROWS;
       // Self
       if (g.invincible === 0 && g.snake.slice(1).some(s => s.x === next.x && s.y === next.y)) { die(g); return; }
       if (g.invincible > 0) g.invincible--;
@@ -137,16 +138,29 @@ export default function SnakePage() {
         ctx.restore();
       });
 
-      // Head (cat emoji)
+      // Head — golden glowing circle + cat emoji on top
       if (g.snake.length > 0) {
         const h = g.snake[0];
+        const hx = h.x * CELL + CELL / 2;
+        const hy = h.y * CELL + CELL / 2;
         const alpha = g.invincible > 0 && Math.floor(g.invincible / 5) % 2 === 0 ? 0.3 : 1;
         ctx.save();
         ctx.globalAlpha = alpha;
-        ctx.font = `${CELL + 2}px serif`;
+        // Golden glow behind head
+        const headGrad = ctx.createRadialGradient(hx, hy, 0, hx, hy, CELL * 0.85);
+        headGrad.addColorStop(0, 'rgba(255,215,0,0.55)');
+        headGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = headGrad;
+        ctx.beginPath(); ctx.arc(hx, hy, CELL * 0.85, 0, Math.PI * 2); ctx.fill();
+        // Gold ring
+        ctx.strokeStyle = 'rgba(255,215,0,0.7)';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(hx, hy, CELL * 0.6, 0, Math.PI * 2); ctx.stroke();
+        // Cat emoji
+        ctx.font = `${CELL + 4}px serif`;
         ctx.textBaseline = 'middle';
         ctx.textAlign = 'center';
-        ctx.fillText('🐱', h.x * CELL + CELL / 2, h.y * CELL + CELL / 2);
+        ctx.fillText('🐱', hx, hy);
         ctx.restore();
       }
 

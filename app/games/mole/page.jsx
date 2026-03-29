@@ -94,17 +94,20 @@ export default function MolePage() {
   }, [spawnChar]);
 
   const whack = useCallback((idx, e) => {
+    // Capture rect BEFORE async state updater — e.currentTarget is nulled by React after event
+    const rect = e.currentTarget?.getBoundingClientRect();
     setHoles(prev => {
       const char = prev[idx];
       if (!char) return prev;
-      // score
       scoreRef.current += char.pts;
       setScore(scoreRef.current);
-      // float text
-      const rect = e.currentTarget.getBoundingClientRect();
-      setFloats(f => [...f, { id: `${Date.now()}-${idx}`, pts: char.pts, x: rect.left + rect.width / 2, y: rect.top }]);
-      setTimeout(() => setFloats(f => f.filter(ff => ff.id !== `${Date.now() - 1}-${idx}`)), 800);
-      // flash
+      // float +pts text
+      if (rect) {
+        const floatId = `${Date.now()}-${idx}`;
+        setFloats(f => [...f, { id: floatId, pts: char.pts, x: rect.left + rect.width / 2, y: rect.top }]);
+        setTimeout(() => setFloats(f => f.filter(ff => ff.id !== floatId)), 800);
+      }
+      // flash ring
       setHitFlash(s => { const n = new Set(s); n.add(idx); return n; });
       setTimeout(() => setHitFlash(s => { const n = new Set(s); n.delete(idx); return n; }), 200);
       const next = [...prev];
