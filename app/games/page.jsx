@@ -3,48 +3,17 @@
 import Link from 'next/link';
 
 const games = [
-  {
-    emoji: '💝',
-    title: 'Heart Catcher',
-    description: 'Catch all my hearts',
-    difficulty: 'Easy',
-    href: '/games/catcher',
-  },
-  {
-    emoji: '🎈',
-    title: 'Balloon Pop',
-    description: 'Pop the hearts before they fly away!',
-    difficulty: 'Easy',
-    href: '/games/tetris',
-  },
-  {
-    emoji: '🃏',
-    title: 'Memory Match',
-    description: 'Can you remember how much I love you?',
-    difficulty: 'Fun',
-    href: '/games/memory',
-  },
-  {
-    emoji: '💙🩷',
-    title: 'Tic Tac Toe',
-    description: 'Siddharth vs Amrita — who wins?',
-    difficulty: '2 Player',
-    href: '/games/tictactoe',
-  },
-  {
-    emoji: '🐱',
-    title: 'Cat Run',
-    description: 'Help the cat run forever!',
-    difficulty: 'Medium',
-    href: '/games/jump',
-  },
-  {
-    emoji: '🏒',
-    title: 'Air Hockey',
-    description: 'Face off on the same screen!',
-    difficulty: '2 Player',
-    href: '/games/airhockey',
-  },
+  { emoji: '💝', title: 'Heart Catcher', description: 'Catch all my hearts', difficulty: 'Easy', href: '/games/catcher' },
+  { emoji: '🎈', title: 'Balloon Pop', description: 'Pop the hearts before they fly away!', difficulty: 'Easy', href: '/games/tetris' },
+  { emoji: '🃏', title: 'Memory Match', description: 'Can you remember how much I love you?', difficulty: 'Fun', href: '/games/memory' },
+  { emoji: '💙🩷', title: 'Tic Tac Toe', description: 'Siddharth vs Amrita — who wins?', difficulty: '2 Player', href: '/games/tictactoe' },
+  { emoji: '🐱', title: 'Cat Run', description: 'Help the cat run forever!', difficulty: 'Medium', href: '/games/jump' },
+  { emoji: '🏒', title: 'Air Hockey', description: 'Face off on the same screen!', difficulty: '2 Player', href: '/games/airhockey' },
+  { emoji: '💕', title: 'Wordle', description: 'Guess the love-themed word!', difficulty: 'Fun', href: '/games/wordle' },
+  { emoji: '🐱❤️', title: 'Cat Snake', description: 'Cat eats hearts — classic!', difficulty: 'Medium', href: '/games/snake' },
+  { emoji: '👑', title: '2048', description: 'Merge the hearts to 2048!', difficulty: 'Medium', href: '/games/game2048' },
+  { emoji: '💜', title: 'Simon Says', description: 'Remember the pattern!', difficulty: 'Fun', href: '/games/simon' },
+  { emoji: '❤️', title: 'Whack a Heart', description: 'Tap the hearts as fast as you can!', difficulty: 'Easy', href: '/games/mole' },
 ];
 
 const difficultyColor = {

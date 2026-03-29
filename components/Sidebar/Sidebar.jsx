@@ -60,6 +60,12 @@ const navItems = [
     sublabel: 'Her photos ♥',
   },
   {
+    href: '/calm',
+    emoji: '🌙',
+    label: 'Calm Corner',
+    sublabel: 'Breathe & relax',
+  },
+  {
     href: '/comfort',
     emoji: '🫂',
     label: 'Comfort Corner',
