@@ -9,7 +9,7 @@ export default function AIPage() {
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('checking');
-  const [selectedModel, setSelectedModel] = useState('llama3.2:1b');
+  const [selectedModel, setSelectedModel] = useState('gemma2:2b');
   const [systemPrompt, setSystemPrompt] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [temperature, setTemperature] = useState(0.7);
