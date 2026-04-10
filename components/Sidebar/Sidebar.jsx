@@ -66,6 +66,12 @@ const navItems = [
     sublabel: 'Her photos ♥',
   },
   {
+    href: '/whisper',
+    emoji: '✨',
+    label: 'Whisper',
+    sublabel: 'Talk to AI',
+  },
+  {
     href: '/calm',
     emoji: '🌙',
     label: 'Calm Corner',

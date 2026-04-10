@@ -81,15 +81,26 @@ export default function GamesPage() {
       </div>
 
       {/* Link to Visual Games */}
-      <div style={{ textAlign: 'center', marginTop: '60px' }}>
-        <Link href="/visual-games" style={{
+      {/* Special sections */}
+      <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '60px' }}>
+        <Link href="/games/portal" style={{
           display: 'inline-flex', alignItems: 'center', gap: '10px',
-          padding: '14px 32px', borderRadius: '50px',
-          background: 'rgba(38,198,218,0.08)', border: '1px solid rgba(38,198,218,0.3)',
-          color: '#26c6da', fontSize: '1rem', fontWeight: 600, textDecoration: 'none',
+          padding: '14px 28px', borderRadius: '50px',
+          background: 'linear-gradient(135deg, rgba(233,30,140,0.1), rgba(179,136,255,0.1))',
+          border: '1px solid rgba(179,136,255,0.3)',
+          color: '#b388ff', fontSize: '0.95rem', fontWeight: 600, textDecoration: 'none',
           fontFamily: "'Inter', sans-serif", transition: 'all 0.2s',
         }}>
-          📸 Visual Games — play with your camera →
+          ✨ Game Portal — 3 premium adventures →
+        </Link>
+        <Link href="/visual-games" style={{
+          display: 'inline-flex', alignItems: 'center', gap: '10px',
+          padding: '14px 28px', borderRadius: '50px',
+          background: 'rgba(38,198,218,0.08)', border: '1px solid rgba(38,198,218,0.3)',
+          color: '#26c6da', fontSize: '0.95rem', fontWeight: 600, textDecoration: 'none',
+          fontFamily: "'Inter', sans-serif", transition: 'all 0.2s',
+        }}>
+          👁️ Visual Games — play with your camera →
         </Link>
       </div>
     </div>
