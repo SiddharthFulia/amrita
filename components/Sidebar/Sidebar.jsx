@@ -72,6 +72,12 @@ const navItems = [
     sublabel: 'Talk to AI',
   },
   {
+    href: '/ai',
+    emoji: '🤖',
+    label: 'Raw AI',
+    sublabel: 'Pure Ollama',
+  },
+  {
     href: '/calm',
     emoji: '🌙',
     label: 'Calm Corner',
