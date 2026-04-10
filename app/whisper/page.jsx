@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { checkHealth, sendChat, fetchStats } from '@/utils/apis';
+import { checkHealth, sendWhisper, fetchStats } from '@/utils/apis';
 
 function formatUptime(seconds) {
   const days = Math.floor(seconds / 86400);
@@ -106,7 +106,7 @@ export default function WhisperPage() {
         text: message.text,
       }));
       const selectedModel = aiMode === 'fast' ? 'llama3.2:1b' : 'llama3.2:3b';
-      const chatResponse = await sendChat(trimmedMessage, chatHistory, selectedModel, 'general');
+      const chatResponse = await sendWhisper(trimmedMessage, chatHistory, selectedModel, 'general');
       const replyText = chatResponse.data?.reply || chatResponse.reply || "Hmm, I'm not sure what to say...";
       setAiSource(chatResponse.data?.source || '');
       setMessages(previousMessages => [...previousMessages, {

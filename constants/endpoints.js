@@ -1,5 +1,6 @@
 export const ENDPOINTS = {
   HEALTH: '/api/health',
-  CHAT: '/api/chat',
+  WHISPER: '/api/whisper',
+  AI: '/api/ai',
   STATS: '/api/stats',
 };

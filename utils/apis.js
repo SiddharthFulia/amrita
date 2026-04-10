@@ -5,8 +5,19 @@ export async function checkHealth() {
   return get(ENDPOINTS.HEALTH, {}, { timeout: 3000 });
 }
 
-export async function sendChat(message, history = [], model = 'llama3.2:3b', context = 'general') {
-  return post(ENDPOINTS.CHAT, { message, history, model, context });
+export async function sendWhisper(message, history = [], model = 'llama3.2:3b', context = 'general') {
+  return post(ENDPOINTS.WHISPER, { message, history, model, context });
+}
+
+export async function sendAI(message, options = {}) {
+  return post(ENDPOINTS.AI, {
+    message,
+    history: options.history || [],
+    model: options.model || 'llama3.2:3b',
+    system: options.system || undefined,
+    maxTokens: options.maxTokens || 200,
+    temperature: options.temperature || 0.7,
+  });
 }
 
 export async function fetchStats() {
