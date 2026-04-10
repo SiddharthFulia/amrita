@@ -33,7 +33,7 @@ export default function WhisperPage() {
   const [showStats, setShowStats] = useState(false);
   const [statsData, setStatsData] = useState(null);
   const [statsLoading, setStatsLoading] = useState(false);
-  const [aiMode, setAiMode] = useState('llama3.2:3b');
+  const [aiMode, setAiMode] = useState('gemma2:2b');
   const scrollContainer = useRef(null);
   const inputElement = useRef(null);
 
