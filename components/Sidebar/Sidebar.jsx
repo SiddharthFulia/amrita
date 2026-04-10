@@ -42,6 +42,12 @@ const navItems = [
     sublabel: 'Play with me',
   },
   {
+    href: '/visual-games',
+    emoji: '👁️',
+    label: 'Visual Games',
+    sublabel: 'Camera magic',
+  },
+  {
     href: '/cats',
     emoji: '🐱',
     label: 'Cats',

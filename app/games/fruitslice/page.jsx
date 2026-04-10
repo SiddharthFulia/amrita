@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 
 const W = 400, H = 600;
-const GRAVITY = 0.25;
+const GRAVITY = 0.16;
 const SLICE_RADIUS = 30;
 const TRAIL_DURATION = 200;
 const STAR_COUNT = 80;
@@ -197,8 +197,8 @@ export default function FruitSlicePage() {
         ...item,
         x,
         y: H + 20,
-        vx: (Math.random() - 0.5) * 6,
-        vy: -(Math.random() * 4 + 8),
+        vx: (Math.random() - 0.5) * 4,
+        vy: -(Math.random() * 3 + 7),
         rotation: 0,
         rotSpeed: (Math.random() - 0.5) * 0.15,
         sliced: false,

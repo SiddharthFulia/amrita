@@ -17,11 +17,15 @@ const games = [
   { emoji: '💕', title: 'Love Meter', description: 'How strong is your love?', difficulty: 'Fun', href: '/games/lovemeter' },
   { emoji: '🍉', title: 'Fruit Slice', description: 'Swipe to slice fruits!', difficulty: 'Easy', href: '/games/fruitslice' },
   { emoji: '🚀', title: 'Doodle Jump', description: 'Jump higher and higher!', difficulty: 'Medium', href: '/games/doodlejump' },
+  { emoji: '🟦', title: 'Geometry Dash', description: 'Jump, dodge, survive!', difficulty: 'Hard', href: '/games/geodash' },
+  { emoji: '🐦', title: 'Flappy Cat', description: 'Tap to fly through pipes!', difficulty: 'Hard', href: '/games/flappy' },
 ];
+
 
 const difficultyColor = {
   Easy: '#4caf50',
   Medium: '#ff9800',
+  Hard: '#ef5350',
   Fun: '#e91e8c',
   '2 Player': '#b388ff',
 };
@@ -61,7 +65,7 @@ export default function GamesPage() {
         </p>
       </div>
 
-      {/* Grid */}
+      {/* Games Grid */}
       <div
         style={{
           display: 'grid',
@@ -74,6 +78,19 @@ export default function GamesPage() {
         {games.map((game) => (
           <GameCard key={game.href} game={game} />
         ))}
+      </div>
+
+      {/* Link to Visual Games */}
+      <div style={{ textAlign: 'center', marginTop: '60px' }}>
+        <Link href="/visual-games" style={{
+          display: 'inline-flex', alignItems: 'center', gap: '10px',
+          padding: '14px 32px', borderRadius: '50px',
+          background: 'rgba(38,198,218,0.08)', border: '1px solid rgba(38,198,218,0.3)',
+          color: '#26c6da', fontSize: '1rem', fontWeight: 600, textDecoration: 'none',
+          fontFamily: "'Inter', sans-serif", transition: 'all 0.2s',
+        }}>
+          📸 Visual Games — play with your camera →
+        </Link>
       </div>
     </div>
   );
