@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { checkHealth, sendAI } from '@/utils/apis';
+import { AI_MODELS, getModelInfo } from '@/constants/models';
 
 export default function AIPage() {
   const [messages, setMessages] = useState([]);
@@ -145,13 +146,20 @@ export default function AIPage() {
           value={selectedModel}
           onChange={event => setSelectedModel(event.target.value)}
           style={{
-            padding: '5px 10px', borderRadius: '12px', fontSize: '11px',
-            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+            padding: '6px 12px', borderRadius: '12px', fontSize: '11px',
+            background: '#1a1a2e', border: `1px solid ${getModelInfo(selectedModel).badgeColor}50`,
             color: '#fff', fontFamily: "'Inter', sans-serif", cursor: 'pointer',
+            outline: 'none', WebkitAppearance: 'none', appearance: 'none',
+            backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27%3E%3Cpath d=%27M2 4l4 4 4-4%27 fill=%27none%27 stroke=%27%234caf50%27 stroke-width=%271.5%27/%3E%3C/svg%3E")',
+            backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center',
+            paddingRight: '28px',
           }}
         >
-          <option value="llama3.2:1b">llama3.2:1b (fast)</option>
-          <option value="llama3.2:3b">llama3.2:3b (smart)</option>
+          {AI_MODELS.map(modelOption => (
+            <option key={modelOption.id} value={modelOption.id} style={{ background: '#1a1a2e', color: '#fff' }}>
+              {modelOption.emoji} {modelOption.label} ({modelOption.badge})
+            </option>
+          ))}
         </select>
 
         <button onClick={() => setShowSettings(!showSettings)} style={{
@@ -167,6 +175,25 @@ export default function AIPage() {
           background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
           color: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: "'Inter', sans-serif",
         }}>Clear</button>
+      </div>
+
+      <div style={{
+        width: '100%', maxWidth: '700px', marginBottom: '10px',
+        display: 'flex', alignItems: 'center', gap: '8px',
+        padding: '6px 12px', borderRadius: '12px',
+        background: `${getModelInfo(selectedModel).badgeColor}10`,
+        border: `1px solid ${getModelInfo(selectedModel).badgeColor}20`,
+        transition: 'all 0.3s',
+      }}>
+        <span style={{ fontSize: '14px' }}>{getModelInfo(selectedModel).emoji}</span>
+        <span style={{
+          fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '8px',
+          background: `${getModelInfo(selectedModel).badgeColor}20`,
+          color: getModelInfo(selectedModel).badgeColor,
+          textTransform: 'uppercase', letterSpacing: '0.06em',
+        }}>{getModelInfo(selectedModel).badge}</span>
+        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{getModelInfo(selectedModel).desc}</span>
+        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginLeft: 'auto' }}>{getModelInfo(selectedModel).speed}</span>
       </div>
 
       {showSettings && (

@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { checkHealth, sendWhisper, fetchStats } from '@/utils/apis';
+import { AI_MODELS, getModelInfo } from '@/constants/models';
 
 function formatUptime(seconds) {
   const days = Math.floor(seconds / 86400);
@@ -32,7 +33,7 @@ export default function WhisperPage() {
   const [showStats, setShowStats] = useState(false);
   const [statsData, setStatsData] = useState(null);
   const [statsLoading, setStatsLoading] = useState(false);
-  const [aiMode, setAiMode] = useState('fast');
+  const [aiMode, setAiMode] = useState('llama3.2:3b');
   const scrollContainer = useRef(null);
   const inputElement = useRef(null);
 
@@ -105,8 +106,7 @@ export default function WhisperPage() {
         from: message.from === 'ai' ? 'them' : 'me',
         text: message.text,
       }));
-      const selectedModel = aiMode === 'fast' ? 'llama3.2:1b' : 'llama3.2:3b';
-      const chatResponse = await sendWhisper(trimmedMessage, chatHistory, selectedModel, 'general');
+      const chatResponse = await sendWhisper(trimmedMessage, chatHistory, aiMode, 'general');
       const replyText = chatResponse.data?.reply || chatResponse.reply || "Hmm, I'm not sure what to say...";
       setAiSource(chatResponse.data?.source || '');
       setMessages(previousMessages => [...previousMessages, {
@@ -188,17 +188,24 @@ export default function WhisperPage() {
             transition: 'all 0.2s',
           }}
         >{showStats ? 'Hide Stats' : '📊 Stats'}</button>
-        <button
-          onClick={() => setAiMode(aiMode === 'fast' ? 'thinking' : 'fast')}
+        <select
+          value={aiMode}
+          onChange={event => setAiMode(event.target.value)}
           style={{
-            padding: '6px 14px', borderRadius: '20px',
-            background: aiMode === 'thinking' ? 'rgba(233,30,140,0.15)' : 'rgba(255,255,255,0.06)',
-            border: `1px solid ${aiMode === 'thinking' ? 'rgba(233,30,140,0.3)' : 'rgba(255,255,255,0.12)'}`,
-            color: aiMode === 'thinking' ? '#e91e8c' : 'rgba(255,255,255,0.5)',
-            fontSize: '11px', cursor: 'pointer', fontFamily: "'Inter', sans-serif",
-            transition: 'all 0.2s',
+            padding: '5px 28px 5px 10px', borderRadius: '14px', fontSize: '11px',
+            background: '#1a1a2e', border: `1px solid ${getModelInfo(aiMode).badgeColor}50`,
+            color: '#fff', fontFamily: "'Inter', sans-serif", cursor: 'pointer',
+            outline: 'none', WebkitAppearance: 'none', appearance: 'none',
+            backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27%3E%3Cpath d=%27M2 4l4 4 4-4%27 fill=%27none%27 stroke=%27%23e91e8c%27 stroke-width=%271.5%27/%3E%3C/svg%3E")',
+            backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center',
           }}
-        >{aiMode === 'fast' ? '⚡ Fast' : '🧠 Thinking'}</button>
+        >
+          {AI_MODELS.map(modelOption => (
+            <option key={modelOption.id} value={modelOption.id} style={{ background: '#1a1a2e', color: '#fff' }}>
+              {modelOption.emoji} {modelOption.badge} ({modelOption.speed})
+            </option>
+          ))}
+        </select>
         {connectionStatus === 'offline' && (
           <button onClick={verifyConnection} style={{
             padding: '6px 14px', borderRadius: '20px',
