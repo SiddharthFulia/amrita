@@ -60,8 +60,8 @@ export async function GET() {
       id: f.id,
       name: f.name,
       createdTime: f.createdTime,
-      thumbnailUrl: `https://drive.google.com/thumbnail?id=${f.id}&sz=w400`,
-      fullUrl: `https://drive.google.com/thumbnail?id=${f.id}&sz=w2000`,
+      thumbnailUrl: `https://lh3.googleusercontent.com/d/${f.id}=s400`,
+      fullUrl: `https://lh3.googleusercontent.com/d/${f.id}=s1600`,
       downloadUrl: `https://drive.google.com/uc?export=download&id=${f.id}`,
     }));
 
@@ -117,8 +117,8 @@ export async function POST(request) {
         id: uploaded.data.id,
         name: uploaded.data.name,
         createdTime: uploaded.data.createdTime,
-        thumbnailUrl: `https://drive.google.com/thumbnail?id=${uploaded.data.id}&sz=w400`,
-        fullUrl: `https://drive.google.com/thumbnail?id=${uploaded.data.id}&sz=w2000`,
+        thumbnailUrl: `https://lh3.googleusercontent.com/d/${uploaded.data.id}=s400`,
+        fullUrl: `https://lh3.googleusercontent.com/d/${uploaded.data.id}=s1600`,
         downloadUrl: `https://drive.google.com/uc?export=download&id=${uploaded.data.id}`,
       },
     });

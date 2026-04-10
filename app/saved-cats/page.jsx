@@ -30,7 +30,7 @@ function Lightbox({ cats, index, onClose, onPrev, onNext, onDownload, downloadin
         }}>‹</button>
       )}
       <div onClick={e => e.stopPropagation()} style={{ maxWidth: '92vw', maxHeight: '90vh', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-        <img src={cat.fullUrl} alt={cat.name} style={{ maxWidth: '92vw', maxHeight: '82vh', objectFit: 'contain', borderRadius: '12px', display: 'block' }} />
+        <img src={cat.fullUrl} alt={cat.name} referrerPolicy="no-referrer" style={{ maxWidth: '92vw', maxHeight: '82vh', objectFit: 'contain', borderRadius: '12px', display: 'block' }} />
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button onClick={() => onDownload(cat)} style={{
             background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)',
@@ -312,7 +312,7 @@ export default function SavedCatsPage() {
                 }}
                 onClick={() => handleCardClick(cat, i)}
               >
-                <img src={cat.thumbnailUrl} alt="saved cat" style={{ width: '100%', display: 'block', borderRadius: '12px' }} />
+                <img src={cat.thumbnailUrl} alt="saved cat" referrerPolicy="no-referrer" style={{ width: '100%', display: 'block', borderRadius: '12px' }} />
 
                 {/* Select checkmark */}
                 {selectMode && (

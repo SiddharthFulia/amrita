@@ -34,7 +34,7 @@ function Lightbox({ photos, index, onClose, onPrev, onNext }) {
         {isVideo ? (
           <iframe src={photo.fullUrl} style={{ width: 'min(92vw, 700px)', height: 'min(70vh, 500px)', border: 'none', borderRadius: '12px' }} allow="autoplay" allowFullScreen />
         ) : (
-          <img src={photo.fullUrl} alt={photo.name} style={{ maxWidth: '92vw', maxHeight: '82vh', objectFit: 'contain', borderRadius: '12px', display: 'block' }} />
+          <img src={photo.fullUrl} alt={photo.name} referrerPolicy="no-referrer" style={{ maxWidth: '92vw', maxHeight: '82vh', objectFit: 'contain', borderRadius: '12px', display: 'block' }} />
         )}
         <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '12px', fontFamily: "'Inter', sans-serif" }}>
           {index + 1} / {photos.length}
@@ -392,6 +392,7 @@ export default function TinkerbellPage() {
                 <img
                   src={photo.thumbnailUrl}
                   alt={photo.name}
+                  referrerPolicy="no-referrer"
                   style={{ width: '100%', display: 'block', borderRadius: '12px' }}
                   onError={e => { e.target.style.display = 'none'; }}
                 />

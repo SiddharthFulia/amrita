@@ -51,6 +51,7 @@ function Lightbox({ photos, index, onClose, onPrev, onNext }) {
           <img
             src={photo.fullUrl}
             alt={photo.name}
+            referrerPolicy="no-referrer"
             style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', borderRadius: '12px' }}
           />
         )}
@@ -116,26 +117,32 @@ function PhotoCard({ photo, index, onOpen }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        breakInside: 'avoid', marginBottom: '12px', cursor: 'pointer',
+        cursor: 'pointer',
         borderRadius: '12px', overflow: 'hidden', position: 'relative',
         background: 'rgba(255,255,255,0.05)',
+        aspectRatio: '4/3',
         transform: hovered ? 'scale(1.02)' : 'scale(1)',
         boxShadow: hovered ? '0 8px 32px rgba(233,30,140,0.3)' : 'none',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
       }}
     >
+      {/* Shimmer placeholder — sits behind the image */}
       {!loaded && (
         <div style={{
-          width: '100%', paddingBottom: '75%',
+          position: 'absolute', inset: 0,
           background: 'linear-gradient(135deg, rgba(233,30,140,0.08), rgba(179,136,255,0.08))',
+          borderRadius: '12px',
         }} />
       )}
       <img
         src={photo.thumbnailUrl}
         alt={photo.name}
         loading="lazy"
+        decoding="async"
+        referrerPolicy="no-referrer"
         onLoad={() => setLoaded(true)}
-        style={{ width: '100%', display: loaded ? 'block' : 'none', borderRadius: '12px' }}
+        onError={() => setLoaded(true)}
+        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px', opacity: loaded ? 1 : 0, transition: 'opacity 0.3s ease' }}
       />
       {loaded && photo.isVideo && (
         <div style={{
@@ -177,7 +184,7 @@ export default function GalleryPage() {
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
   const fetchPhotos = useCallback(async (pageToken = null) => {
-    const url = `/api/photos?pageSize=20${pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : ''}`;
+    const url = `/api/photos?pageSize=12${pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : ''}`;
     const res = await fetch(url, { cache: 'no-store' });
     const data = await res.json();
     if (data.error) throw new Error(data.error);
@@ -253,12 +260,12 @@ export default function GalleryPage() {
 
       {/* Loading skeletons */}
       {loading && (
-        <div style={{ columns: '3 180px', columnGap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '12px' }}>
           {Array.from({ length: 9 }).map((_, i) => (
             <div key={i} style={{
-              breakInside: 'avoid', marginBottom: '12px', borderRadius: '12px',
+              borderRadius: '12px',
               background: 'rgba(255,255,255,0.05)',
-              paddingBottom: `${55 + (i % 3) * 25}%`,
+              aspectRatio: '4/3',
             }} />
           ))}
         </div>
@@ -288,7 +295,7 @@ export default function GalleryPage() {
                 {monthPhotos.length} photo{monthPhotos.length !== 1 ? 's' : ''}
               </div>
             </div>
-            <div style={{ columns: '3 180px', columnGap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '12px' }}>
               {monthPhotos.map((photo, i) => (
                 <PhotoCard
                   key={photo.id}

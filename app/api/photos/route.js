@@ -79,10 +79,10 @@ export async function GET(request) {
       mimeType: f.mimeType,
       isVideo: f.mimeType?.startsWith('video/'),
       createdTime: f.createdTime,
-      thumbnailUrl: `https://drive.google.com/thumbnail?id=${f.id}&sz=w600`,
+      thumbnailUrl: `https://lh3.googleusercontent.com/d/${f.id}=s400`,
       fullUrl: f.mimeType?.startsWith('video/')
         ? `https://drive.google.com/file/d/${f.id}/preview`
-        : `https://drive.google.com/thumbnail?id=${f.id}&sz=w2000`,
+        : `https://lh3.googleusercontent.com/d/${f.id}=s1600`,
       downloadUrl: `https://drive.google.com/uc?export=download&id=${f.id}`,
     }));
 
@@ -144,10 +144,10 @@ export async function POST(request) {
         mimeType: file.type,
         isVideo,
         createdTime: uploaded.data.createdTime,
-        thumbnailUrl: `https://drive.google.com/thumbnail?id=${uploaded.data.id}&sz=w600`,
+        thumbnailUrl: `https://lh3.googleusercontent.com/d/${uploaded.data.id}=s400`,
         fullUrl: isVideo
           ? `https://drive.google.com/file/d/${uploaded.data.id}/preview`
-          : `https://drive.google.com/thumbnail?id=${uploaded.data.id}&sz=w2000`,
+          : `https://lh3.googleusercontent.com/d/${uploaded.data.id}=s1600`,
         downloadUrl: `https://drive.google.com/uc?export=download&id=${uploaded.data.id}`,
       },
     });

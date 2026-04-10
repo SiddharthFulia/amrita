@@ -61,10 +61,10 @@ export async function GET() {
       name: f.name,
       createdTime: f.createdTime,
       mimeType: f.mimeType,
-      thumbnailUrl: `https://drive.google.com/thumbnail?id=${f.id}&sz=w400`,
+      thumbnailUrl: `https://lh3.googleusercontent.com/d/${f.id}=s400`,
       fullUrl: f.mimeType?.startsWith('video/')
         ? `https://drive.google.com/file/d/${f.id}/preview`
-        : `https://drive.google.com/thumbnail?id=${f.id}&sz=w2000`,
+        : `https://lh3.googleusercontent.com/d/${f.id}=s1600`,
       downloadUrl: `https://drive.google.com/uc?export=download&id=${f.id}`,
     }));
 
@@ -117,10 +117,10 @@ export async function POST(request) {
         name: f.name,
         createdTime: f.createdTime,
         mimeType: f.mimeType,
-        thumbnailUrl: `https://drive.google.com/thumbnail?id=${f.id}&sz=w400`,
+        thumbnailUrl: `https://lh3.googleusercontent.com/d/${f.id}=s400`,
         fullUrl: f.mimeType?.startsWith('video/')
           ? `https://drive.google.com/file/d/${f.id}/preview`
-          : `https://drive.google.com/thumbnail?id=${f.id}&sz=w2000`,
+          : `https://lh3.googleusercontent.com/d/${f.id}=s1600`,
         downloadUrl: `https://drive.google.com/uc?export=download&id=${f.id}`,
       },
     });

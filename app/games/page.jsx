@@ -14,6 +14,9 @@ const games = [
   { emoji: '👑', title: '2048', description: 'Merge the hearts to 2048!', difficulty: 'Medium', href: '/games/game2048' },
   { emoji: '💜', title: 'Simon Says', description: 'Remember the pattern!', difficulty: 'Fun', href: '/games/simon' },
   { emoji: '❤️', title: 'Whack a Heart', description: 'Tap the hearts as fast as you can!', difficulty: 'Easy', href: '/games/mole' },
+  { emoji: '💕', title: 'Love Meter', description: 'How strong is your love?', difficulty: 'Fun', href: '/games/lovemeter' },
+  { emoji: '🍉', title: 'Fruit Slice', description: 'Swipe to slice fruits!', difficulty: 'Easy', href: '/games/fruitslice' },
+  { emoji: '🚀', title: 'Doodle Jump', description: 'Jump higher and higher!', difficulty: 'Medium', href: '/games/doodlejump' },
 ];
 
 const difficultyColor = {
