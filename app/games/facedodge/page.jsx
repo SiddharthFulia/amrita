@@ -45,6 +45,8 @@ export default function FaceDodgePage() {
   const [cameraError, setCameraError] = useState('');
   const [cameraActive, setCameraActive] = useState(false);
   const [highScore, setHighScore] = useState(0);
+  const controlModeRef = useRef('camera');
+  const cameraActiveRef = useRef(false);
 
   // Load high score
   useEffect(() => {
@@ -85,7 +87,9 @@ export default function FaceDodgePage() {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
         setCameraActive(true);
+        cameraActiveRef.current = true;
         setControlMode('camera');
+        controlModeRef.current = 'camera';
         prevFrameRef.current = null;
       }
     } catch (err) {
@@ -98,6 +102,7 @@ export default function FaceDodgePage() {
           : `Camera error: ${err.message}. Using touch controls.`
       );
       setControlMode('touch');
+      controlModeRef.current = 'touch';
     }
   }, []);
 
@@ -108,6 +113,7 @@ export default function FaceDodgePage() {
       videoRef.current.srcObject = null;
     }
     setCameraActive(false);
+    cameraActiveRef.current = false;
   }, []);
 
   // Detect movement center from video using frame differencing
@@ -183,7 +189,7 @@ export default function FaceDodgePage() {
   // Touch/mouse handling
   const handlePointerMove = useCallback(
     (e) => {
-      if (!stateRef.current || controlMode !== 'touch') return;
+      if (!stateRef.current || controlModeRef.current !== 'touch') return;
       const canvas = canvasRef.current;
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
@@ -236,13 +242,13 @@ export default function FaceDodgePage() {
       s.baseSpeed = 2 + s.elapsed / 20000;
       s.spawnInterval = Math.max(SPAWN_INTERVAL_MIN, SPAWN_INTERVAL_INIT - s.elapsed / 30);
 
-      // --- Input ---
-      if (controlMode === 'camera' && cameraActive) {
+      // --- Input (use refs to avoid stale closure) ---
+      if (controlModeRef.current === 'camera' && cameraActiveRef.current) {
         const pos = detectMovement();
         if (pos !== null) {
           s.targetX = CHAR_SIZE / 2 + pos * (CANVAS_W - CHAR_SIZE);
         }
-      } else if (controlMode === 'touch' && s.touchX !== null) {
+      } else if (controlModeRef.current === 'touch' && s.touchX !== null) {
         s.targetX = s.touchX;
       }
 
@@ -501,7 +507,7 @@ export default function FaceDodgePage() {
     return () => {
       if (animRef.current) cancelAnimationFrame(animRef.current);
     };
-  }, [gamePhase, controlMode, cameraActive, detectMovement]);
+  }, [gamePhase, detectMovement]);
 
   // Cleanup camera on unmount
   useEffect(() => {
@@ -517,6 +523,7 @@ export default function FaceDodgePage() {
   // Handle start with touch
   const handleStartWithTouch = () => {
     setControlMode('touch');
+    controlModeRef.current = 'touch';
     setCameraError('');
     startGame();
   };
@@ -526,6 +533,7 @@ export default function FaceDodgePage() {
     if (controlMode === 'camera') {
       stopCamera();
       setControlMode('touch');
+      controlModeRef.current = 'touch';
     } else {
       await startCamera();
     }
