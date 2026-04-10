@@ -6,14 +6,14 @@ import Link from "next/link";
 /* ─── constants ─── */
 const CW = 360;
 const CH = 540;
-const GRAVITY = 0.4;
-const JUMP_VEL = -10;
-const BOOST_VEL = -30;
-const PLAT_H = 12;
-const PLAT_MIN_W = 60;
-const PLAT_MAX_W = 90;
-const PLAYER_R = 12;
-const MOVE_SPEED = 5;
+const GRAVITY = 0.28;
+const JUMP_VEL = -8.5;
+const BOOST_VEL = -24;
+const PLAT_H = 14;
+const PLAT_MIN_W = 65;
+const PLAT_MAX_W = 95;
+const PLAYER_R = 18;
+const MOVE_SPEED = 4.5;
 const STAR_COUNT = 80;
 const INITIAL_SPACING = 60;
 const MAX_SPACING = 130;
@@ -109,64 +109,40 @@ export default function DoodleJumpPage() {
     ctx.closePath();
   }
 
-  function drawCatCharacter(ctx, px, py) {
+  function drawCatCharacter(ctx, px, py, vy, isGameOver) {
     const r = PLAYER_R;
-    // body
-    ctx.fillStyle = "#e91e8c";
+
+    // Glow behind character
+    const glow = ctx.createRadialGradient(px, py, 0, px, py, r * 2.2);
+    glow.addColorStop(0, 'rgba(233,30,140,0.4)');
+    glow.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(px, py, r, 0, Math.PI * 2);
+    ctx.arc(px, py, r * 2.2, 0, Math.PI * 2);
     ctx.fill();
 
-    // left ear
-    ctx.beginPath();
-    ctx.moveTo(px - r + 2, py - r + 2);
-    ctx.lineTo(px - r - 4, py - r - 10);
-    ctx.lineTo(px - r / 2 + 2, py - r + 1);
-    ctx.closePath();
-    ctx.fillStyle = "#e91e8c";
-    ctx.fill();
+    // Trail particles when going up
+    if (vy < -2 && !isGameOver) {
+      for (let i = 0; i < 3; i++) {
+        const tx = px + (Math.random() - 0.5) * r;
+        const ty = py + r + Math.random() * 8;
+        const tr = 1.5 + Math.random() * 2;
+        ctx.globalAlpha = 0.3 + Math.random() * 0.3;
+        ctx.fillStyle = '#ff6ec7';
+        ctx.beginPath();
+        ctx.arc(tx, ty, tr, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
 
-    // right ear
-    ctx.beginPath();
-    ctx.moveTo(px + r - 2, py - r + 2);
-    ctx.lineTo(px + r + 4, py - r - 10);
-    ctx.lineTo(px + r / 2 - 2, py - r + 1);
-    ctx.closePath();
-    ctx.fill();
-
-    // inner ears
-    ctx.fillStyle = "#ff6ec7";
-    ctx.beginPath();
-    ctx.moveTo(px - r + 4, py - r + 2);
-    ctx.lineTo(px - r - 1, py - r - 6);
-    ctx.lineTo(px - r / 2 + 3, py - r + 2);
-    ctx.closePath();
-    ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(px + r - 4, py - r + 2);
-    ctx.lineTo(px + r + 1, py - r - 6);
-    ctx.lineTo(px + r / 2 - 3, py - r + 2);
-    ctx.closePath();
-    ctx.fill();
-
-    // eyes
-    ctx.fillStyle = "#fff";
-    ctx.beginPath();
-    ctx.arc(px - 4, py - 3, 3, 0, Math.PI * 2);
-    ctx.arc(px + 4, py - 3, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#07071a";
-    ctx.beginPath();
-    ctx.arc(px - 3.5, py - 3, 1.5, 0, Math.PI * 2);
-    ctx.arc(px + 4.5, py - 3, 1.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    // mouth
-    ctx.strokeStyle = "#ff6ec7";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.arc(px, py + 2, 3, 0.1 * Math.PI, 0.9 * Math.PI);
-    ctx.stroke();
+    // Emoji character — big and clear
+    const emoji = isGameOver ? '😿' : vy < -3 ? '😺' : '🐱';
+    const fontSize = r * 2.4;
+    ctx.font = `${fontSize}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(emoji, px, py);
   }
 
   function drawStarBurst(ctx, x, y, t) {
@@ -386,7 +362,7 @@ export default function DoodleJumpPage() {
     }
 
     // player
-    drawCatCharacter(ctx, g.px, g.py);
+    drawCatCharacter(ctx, g.px, g.py, g.vy, false);
 
     // score
     ctx.fillStyle = "#fff";
@@ -483,7 +459,7 @@ export default function DoodleJumpPage() {
 
       // demo cat
       const catY = 350 + Math.sin(Date.now() / 500) * 15;
-      drawCatCharacter(ctx, CW / 2, catY);
+      drawCatCharacter(ctx, CW / 2, catY, -5, false);
 
       raf = requestAnimationFrame(draw);
     };

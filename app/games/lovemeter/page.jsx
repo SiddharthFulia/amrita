@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
-// ─── Special pairs that get 100% ─────────────────────────────────────────────
+// ─── Special pairs ───────────────────────────────────────────────────────────
 function normalize(s) { return s.trim().toLowerCase().replace(/\s+/g, ' '); }
 
 function isPerfectPair(a, b) {
@@ -15,9 +15,27 @@ function isPerfectPair(a, b) {
   return pairs.some(([x, y]) => n1 === x && n2 === y);
 }
 
-// Deterministic "random" based on names — always < 75 for non-perfect pairs
+// High-score pairs (sisters, family) — get 85-95%
+function isHighPair(a, b) {
+  const n1 = normalize(a), n2 = normalize(b);
+  const pairs = [
+    ['amrita', 'mannat'], ['mannat', 'amrita'],
+    ['siddharth', 'mannat'], ['mannat', 'siddharth'],
+    ['mannat', 'tinkerbell'], ['tinkerbell', 'mannat'],
+  ];
+  return pairs.some(([x, y]) => n1 === x && n2 === y);
+}
+
+// Deterministic "random" based on names — always < 75 for non-special pairs
 function calcScore(a, b) {
   if (isPerfectPair(a, b)) return 100;
+  if (isHighPair(a, b)) {
+    // 85-95 range, deterministic per pair
+    const s = normalize(a) + '♥' + normalize(b);
+    let hash = 0;
+    for (let i = 0; i < s.length; i++) hash = ((hash << 5) - hash + s.charCodeAt(i)) | 0;
+    return 85 + Math.abs(hash % 11); // 85–95
+  }
   const s = normalize(a) + '♥' + normalize(b);
   let hash = 0;
   for (let i = 0; i < s.length; i++) hash = ((hash << 5) - hash + s.charCodeAt(i)) | 0;

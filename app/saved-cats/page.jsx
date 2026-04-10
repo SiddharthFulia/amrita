@@ -296,7 +296,7 @@ export default function SavedCatsPage() {
       )}
 
       {!loading && cats.length > 0 && (
-        <div style={{ columns: '3 160px', columnGap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px' }}>
           {cats.map((cat, i) => {
             const isSelected = selected.has(cat.id);
             return (
@@ -304,15 +304,16 @@ export default function SavedCatsPage() {
                 key={cat.id}
                 className="scat-card"
                 style={{
-                  breakInside: 'avoid', marginBottom: '12px',
+                  aspectRatio: '4/3',
                   borderRadius: '12px', overflow: 'hidden', position: 'relative',
-                  background: 'rgba(255,255,255,0.04)', cursor: 'pointer',
+                  background: 'linear-gradient(135deg, rgba(233,30,140,0.08), rgba(179,136,255,0.08))',
+                  cursor: 'pointer',
                   outline: isSelected ? '2px solid #e91e8c' : 'none',
                   boxShadow: isSelected ? '0 0 0 2px rgba(233,30,140,0.4)' : 'none',
                 }}
                 onClick={() => handleCardClick(cat, i)}
               >
-                <img src={cat.thumbnailUrl} alt="saved cat" referrerPolicy="no-referrer" style={{ width: '100%', display: 'block', borderRadius: '12px' }} />
+                <img src={cat.thumbnailUrl} alt="saved cat" loading="lazy" decoding="async" referrerPolicy="no-referrer" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
 
                 {/* Select checkmark */}
                 {selectMode && (

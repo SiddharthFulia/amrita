@@ -106,85 +106,89 @@ export default function FruitSlicePage() {
     const ctx = canvas.getContext('2d');
     const g = gameRef.current;
 
-    function getPos(e) {
+    // ── Multi-blade support: tracks multiple fingers + mouse ──
+    // Each blade has: { x, y, px, py, down, moved }
+    g.blades = {};  // keyed by pointer ID ('mouse' or touch identifier)
+
+    function getScale() {
       const rect = canvas.getBoundingClientRect();
-      const scaleX = W / rect.width;
-      const scaleY = H / rect.height;
-      if (e.touches && e.touches.length > 0) {
-        return {
-          x: (e.touches[0].clientX - rect.left) * scaleX,
-          y: (e.touches[0].clientY - rect.top) * scaleY,
-        };
-      }
-      return {
-        x: (e.clientX - rect.left) * scaleX,
-        y: (e.clientY - rect.top) * scaleY,
-      };
+      return { rect, sx: W / rect.width, sy: H / rect.height };
     }
 
-    function onDown(e) {
-      e.preventDefault();
-      const pos = getPos(e);
-      g.mouse.x = pos.x;
-      g.mouse.y = pos.y;
-      g.mouse.px = pos.x;
-      g.mouse.py = pos.y;
-      g.mouse.down = true;
-      g.mouse.moved = false;
+    function pointerPos(clientX, clientY) {
+      const { rect, sx, sy } = getScale();
+      return { x: (clientX - rect.left) * sx, y: (clientY - rect.top) * sy };
     }
 
-    function onMove(e) {
-      e.preventDefault();
-      if (!g.mouse.down) return;
-      const pos = getPos(e);
-      g.mouse.px = g.mouse.x;
-      g.mouse.py = g.mouse.y;
-      g.mouse.x = pos.x;
-      g.mouse.y = pos.y;
-      const dx = g.mouse.x - g.mouse.px;
-      const dy = g.mouse.y - g.mouse.py;
+    function bladeMove(id, x, y) {
+      const b = g.blades[id];
+      if (!b || !b.down) return;
+      b.px = b.x; b.py = b.y;
+      b.x = x; b.y = y;
+      const dx = b.x - b.px, dy = b.y - b.py;
       if (dx * dx + dy * dy > 4) {
-        g.mouse.moved = true;
-        g.trails.push({
-          x1: g.mouse.px, y1: g.mouse.py,
-          x2: g.mouse.x, y2: g.mouse.y,
-          time: performance.now(),
-        });
+        b.moved = true;
+        g.trails.push({ x1: b.px, y1: b.py, x2: b.x, y2: b.y, time: performance.now() });
       }
     }
 
-    function onUp(e) {
+    // Mouse handlers
+    function onMouseDown(e) {
       e.preventDefault();
-      g.mouse.down = false;
-      g.mouse.moved = false;
+      const pos = pointerPos(e.clientX, e.clientY);
+      g.blades.mouse = { x: pos.x, y: pos.y, px: pos.x, py: pos.y, down: true, moved: false };
     }
-
-    // When mouse leaves canvas, DON'T reset — just pause tracking.
-    // When it re-enters while button still held, resume from new position.
-    function onLeave() {
-      // Don't set mouse.down = false; blade stays "ready"
+    function onMouseMove(e) {
+      e.preventDefault();
+      if (!g.blades.mouse?.down) return;
+      const pos = pointerPos(e.clientX, e.clientY);
+      bladeMove('mouse', pos.x, pos.y);
     }
-
-    function onEnter(e) {
-      // If mouse button is held while re-entering, update position to avoid jump-slicing
-      if (g.mouse.down) {
-        const pos = getPos(e);
-        g.mouse.x = pos.x;
-        g.mouse.y = pos.y;
-        g.mouse.px = pos.x;
-        g.mouse.py = pos.y;
+    function onMouseUp(e) {
+      e.preventDefault();
+      if (g.blades.mouse) { g.blades.mouse.down = false; g.blades.mouse.moved = false; }
+    }
+    function onMouseLeave() { /* keep blade alive */ }
+    function onMouseEnter(e) {
+      if (g.blades.mouse?.down) {
+        const pos = pointerPos(e.clientX, e.clientY);
+        g.blades.mouse.x = pos.x; g.blades.mouse.y = pos.y;
+        g.blades.mouse.px = pos.x; g.blades.mouse.py = pos.y;
       }
     }
 
-    canvas.addEventListener('mousedown', onDown);
-    canvas.addEventListener('mousemove', onMove);
-    canvas.addEventListener('mouseup', onUp);
-    canvas.addEventListener('mouseleave', onLeave);
-    canvas.addEventListener('mouseenter', onEnter);
-    canvas.addEventListener('touchstart', onDown, { passive: false });
-    canvas.addEventListener('touchmove', onMove, { passive: false });
-    canvas.addEventListener('touchend', onUp, { passive: false });
-    canvas.addEventListener('touchcancel', onUp, { passive: false });
+    // Touch handlers — each finger is its own blade
+    function onTouchStart(e) {
+      e.preventDefault();
+      for (const t of e.changedTouches) {
+        const pos = pointerPos(t.clientX, t.clientY);
+        g.blades[`t${t.identifier}`] = { x: pos.x, y: pos.y, px: pos.x, py: pos.y, down: true, moved: false };
+      }
+    }
+    function onTouchMove(e) {
+      e.preventDefault();
+      for (const t of e.changedTouches) {
+        const pos = pointerPos(t.clientX, t.clientY);
+        bladeMove(`t${t.identifier}`, pos.x, pos.y);
+      }
+    }
+    function onTouchEnd(e) {
+      e.preventDefault();
+      for (const t of e.changedTouches) {
+        const id = `t${t.identifier}`;
+        if (g.blades[id]) { g.blades[id].down = false; delete g.blades[id]; }
+      }
+    }
+
+    canvas.addEventListener('mousedown', onMouseDown);
+    canvas.addEventListener('mousemove', onMouseMove);
+    canvas.addEventListener('mouseup', onMouseUp);
+    canvas.addEventListener('mouseleave', onMouseLeave);
+    canvas.addEventListener('mouseenter', onMouseEnter);
+    canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+    canvas.addEventListener('touchend', onTouchEnd, { passive: false });
+    canvas.addEventListener('touchcancel', onTouchEnd, { passive: false });
 
     function spawnItem() {
       const item = pickItem(g.cfg.bombChance);
@@ -203,7 +207,10 @@ export default function FruitSlicePage() {
     }
 
     function spawnWave() {
-      const count = 1 + Math.floor(Math.random() * 3) + (g.elapsed > 30 ? 1 : 0);
+      // Gentler spawning: 1-2 early, 2-3 later
+      const count = g.elapsed < 20 ? 1 + Math.floor(Math.random() * 2)
+                  : g.elapsed < 50 ? 1 + Math.floor(Math.random() * 2.5)
+                  : 2 + Math.floor(Math.random() * 2);
       for (let i = 0; i < count; i++) {
         g.items.push(spawnItem());
       }
@@ -261,29 +268,31 @@ export default function FruitSlicePage() {
     }
 
     function checkSlice() {
-      if (!g.mouse.down || !g.mouse.moved) return;
-      const mx = g.mouse.x, my = g.mouse.y;
-      const pmx = g.mouse.px, pmy = g.mouse.py;
+      // Check ALL active blades (mouse + every finger)
+      for (const blade of Object.values(g.blades)) {
+        if (!blade.down || !blade.moved) continue;
+        const mx = blade.x, my = blade.y;
+        const pmx = blade.px, pmy = blade.py;
 
-      for (const item of g.items) {
-        if (item.sliced || item.y > H + 50) continue;
-        // Point-to-segment distance check
-        const dx = mx - pmx, dy = my - pmy;
-        const len2 = dx * dx + dy * dy;
-        let dist;
-        if (len2 < 1) {
-          const ex = mx - item.x, ey = my - item.y;
-          dist = Math.sqrt(ex * ex + ey * ey);
-        } else {
-          let t = ((item.x - pmx) * dx + (item.y - pmy) * dy) / len2;
-          t = Math.max(0, Math.min(1, t));
-          const cx = pmx + t * dx;
-          const cy = pmy + t * dy;
-          const ex = cx - item.x, ey = cy - item.y;
-          dist = Math.sqrt(ex * ex + ey * ey);
-        }
-        if (dist < SLICE_RADIUS) {
-          sliceItem(item);
+        for (const item of g.items) {
+          if (item.sliced || item.y > H + 50) continue;
+          const dx = mx - pmx, dy = my - pmy;
+          const len2 = dx * dx + dy * dy;
+          let dist;
+          if (len2 < 1) {
+            const ex = mx - item.x, ey = my - item.y;
+            dist = Math.sqrt(ex * ex + ey * ey);
+          } else {
+            let t = ((item.x - pmx) * dx + (item.y - pmy) * dy) / len2;
+            t = Math.max(0, Math.min(1, t));
+            const cx = pmx + t * dx;
+            const cy = pmy + t * dy;
+            const ex = cx - item.x, ey = cy - item.y;
+            dist = Math.sqrt(ex * ex + ey * ey);
+          }
+          if (dist < SLICE_RADIUS) {
+            sliceItem(item);
+          }
         }
       }
     }
@@ -301,12 +310,12 @@ export default function FruitSlicePage() {
         }
       }
 
-      // Speed up over time
-      const speedMult = 1 + g.elapsed / 120;
+      // Speed up gently over time
+      const speedMult = 1 + g.elapsed / 200;
       g.spawnTimer -= dt;
       if (g.spawnTimer <= 0) {
         spawnWave();
-        g.spawnTimer = (0.8 + Math.random() * 1.0) / speedMult;
+        g.spawnTimer = Math.max(0.8, (1.4 + Math.random() * 1.0) / speedMult);
       }
 
       // Check slice
@@ -567,15 +576,15 @@ export default function FruitSlicePage() {
 
     return () => {
       cancelAnimationFrame(rafRef.current);
-      canvas.removeEventListener('mousedown', onDown);
-      canvas.removeEventListener('mousemove', onMove);
-      canvas.removeEventListener('mouseup', onUp);
-      canvas.removeEventListener('mouseleave', onLeave);
-      canvas.removeEventListener('mouseenter', onEnter);
-      canvas.removeEventListener('touchstart', onDown);
-      canvas.removeEventListener('touchmove', onMove);
-      canvas.removeEventListener('touchend', onUp);
-      canvas.removeEventListener('touchcancel', onUp);
+      canvas.removeEventListener('mousedown', onMouseDown);
+      canvas.removeEventListener('mousemove', onMouseMove);
+      canvas.removeEventListener('mouseup', onMouseUp);
+      canvas.removeEventListener('mouseleave', onMouseLeave);
+      canvas.removeEventListener('mouseenter', onMouseEnter);
+      canvas.removeEventListener('touchstart', onTouchStart);
+      canvas.removeEventListener('touchmove', onTouchMove);
+      canvas.removeEventListener('touchend', onTouchEnd);
+      canvas.removeEventListener('touchcancel', onTouchEnd);
     };
   }, [screen]);
 

@@ -347,7 +347,7 @@ export default function TinkerbellPage() {
       )}
 
       {loading && (
-        <div style={{ columns: '3 160px', columnGap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px' }}>
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} style={{
               breakInside: 'avoid', marginBottom: '12px', borderRadius: '12px',
@@ -369,7 +369,7 @@ export default function TinkerbellPage() {
       )}
 
       {!loading && photos.length > 0 && (
-        <div style={{ columns: '3 160px', columnGap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px' }}>
           {photos.map((photo, i) => {
             const isVideo = photo.mimeType?.startsWith('video/');
             const isSelected = selected.has(photo.id);
@@ -378,9 +378,10 @@ export default function TinkerbellPage() {
                 key={photo.id}
                 className="tink-card"
                 style={{
-                  breakInside: 'avoid', marginBottom: '12px',
+                  aspectRatio: '4/3',
                   borderRadius: '12px', overflow: 'hidden', position: 'relative',
-                  background: 'rgba(255,255,255,0.04)', cursor: 'pointer',
+                  background: 'linear-gradient(135deg, rgba(233,30,140,0.08), rgba(179,136,255,0.08))',
+                  cursor: 'pointer',
                   outline: isSelected ? '2px solid #e91e8c' : 'none',
                   boxShadow: isSelected ? '0 0 0 2px rgba(233,30,140,0.4)' : 'none',
                 }}
@@ -392,9 +393,11 @@ export default function TinkerbellPage() {
                 <img
                   src={photo.thumbnailUrl}
                   alt={photo.name}
+                  loading="lazy"
+                  decoding="async"
                   referrerPolicy="no-referrer"
-                  style={{ width: '100%', display: 'block', borderRadius: '12px' }}
-                  onError={e => { e.target.style.display = 'none'; }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }}
+                  onError={e => { e.target.style.opacity = '0'; }}
                 />
 
                 {/* Video badge */}
