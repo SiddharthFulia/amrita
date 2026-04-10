@@ -23,3 +23,7 @@ export async function sendAI(message, options = {}) {
 export async function fetchStats() {
   return get(ENDPOINTS.STATS, {}, { timeout: 5000 });
 }
+
+export async function generateMemoryGlitch(difficulty = 'easy') {
+  return post(ENDPOINTS.MEMORY_GLITCH, { difficulty }, { timeout: 30000 });
+}

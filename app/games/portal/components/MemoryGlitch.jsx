@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TEXT_PAIRS, tokenize, findDiffs } from '../utils/textPairs';
+import { generateMemoryGlitch } from '@/utils/apis';
 
 // ─── Sparkle Particle ──────────────────────────────────────────────────────────
 function SparkleParticle({ x, y, onDone }) {
@@ -159,14 +160,18 @@ function GlitchedWord({ word, originalWord, isDiff, isFound, onCorrect, onWrong 
 
 // ─── Main Component ─────────────────────────────────────────────────────────────
 export default function MemoryGlitch({ onBack }) {
-  const [screen, setScreen] = useState('select'); // 'select' | 'play' | 'complete'
+  const [screen, setScreen] = useState('select');
   const [currentLevel, setCurrentLevel] = useState(0);
-  const [foundDiffs, setFoundDiffs] = useState(new Set()); // "lineIdx-wordIdx"
+  const [foundDiffs, setFoundDiffs] = useState(new Set());
   const [mistakes, setMistakes] = useState(0);
   const [timer, setTimer] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const [sparkles, setSparkles] = useState([]);
-  const [levelResults, setLevelResults] = useState({}); // { levelId: { stars, time, mistakes } }
+  const [levelResults, setLevelResults] = useState({});
+  const [dynamicPair, setDynamicPair] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState('');
+  const [isDynamic, setIsDynamic] = useState(false);
   const sparkleId = useRef(0);
 
   // Timer
@@ -176,7 +181,29 @@ export default function MemoryGlitch({ onBack }) {
     return () => clearInterval(interval);
   }, [timerRunning]);
 
-  const pair = TEXT_PAIRS[currentLevel];
+  const pair = isDynamic ? dynamicPair : TEXT_PAIRS[currentLevel];
+
+  async function generateDynamic(difficulty) {
+    setIsGenerating(true);
+    setGenerateError('');
+    try {
+      const response = await generateMemoryGlitch(difficulty);
+      const generatedPair = response.data;
+      generatedPair.id = `dynamic-${Date.now()}`;
+      setDynamicPair(generatedPair);
+      setIsDynamic(true);
+      setFoundDiffs(new Set());
+      setMistakes(0);
+      setTimer(0);
+      setTimerRunning(true);
+      setSparkles([]);
+      setScreen('play');
+    } catch (requestError) {
+      setGenerateError('AI unavailable — try a preset level instead');
+    } finally {
+      setIsGenerating(false);
+    }
+  }
 
   // Compute all diffs for current level
   const allDiffs = useCallback(() => {
@@ -210,6 +237,8 @@ export default function MemoryGlitch({ onBack }) {
   }, [foundDiffs.size, totalDiffs, screen, mistakes, timer, pair]);
 
   const startLevel = (idx) => {
+    setIsDynamic(false);
+    setDynamicPair(null);
     setCurrentLevel(idx);
     setFoundDiffs(new Set());
     setMistakes(0);
@@ -311,6 +340,47 @@ export default function MemoryGlitch({ onBack }) {
                 </motion.button>
               );
             })}
+          </div>
+
+          <div style={{ marginTop: 32, textAlign: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 16 }}>
+              <div style={{ width: 40, height: 1, background: 'rgba(179,136,255,0.3)' }} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#b388ff' }}>🤖 AI Generated</span>
+              <div style={{ width: 40, height: 1, background: 'rgba(179,136,255,0.3)' }} />
+            </div>
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginBottom: 14 }}>
+              Fresh text every time — powered by Ollama
+            </p>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+              {[
+                { difficulty: 'easy', label: 'Easy', color: '#4caf50', desc: '3 diffs' },
+                { difficulty: 'medium', label: 'Medium', color: '#ff9800', desc: '5 diffs' },
+                { difficulty: 'hard', label: 'Hard', color: '#ef5350', desc: '7 diffs' },
+              ].map(levelOption => (
+                <motion.button
+                  key={levelOption.difficulty}
+                  onClick={() => generateDynamic(levelOption.difficulty)}
+                  disabled={isGenerating}
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                  style={{
+                    padding: '12px 22px', borderRadius: 14, cursor: isGenerating ? 'wait' : 'pointer',
+                    background: `${levelOption.color}12`, border: `1px solid ${levelOption.color}40`,
+                    color: '#fff', fontFamily: "'Inter', sans-serif", fontSize: 13,
+                    opacity: isGenerating ? 0.5 : 1,
+                  }}
+                >
+                  <div style={{ fontWeight: 700, marginBottom: 2 }}>{levelOption.label}</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>{levelOption.desc}</div>
+                </motion.button>
+              ))}
+            </div>
+            {isGenerating && (
+              <p style={{ fontSize: 12, color: '#b388ff', marginTop: 12 }}>✨ Generating new memory...</p>
+            )}
+            {generateError && (
+              <p style={{ fontSize: 12, color: '#ef5350', marginTop: 12 }}>{generateError}</p>
+            )}
           </div>
         </motion.div>
       </div>

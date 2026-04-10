@@ -3,4 +3,5 @@ export const ENDPOINTS = {
   WHISPER: '/api/whisper',
   AI: '/api/ai',
   STATS: '/api/stats',
+  MEMORY_GLITCH: '/api/memory-glitch/generate',
 };

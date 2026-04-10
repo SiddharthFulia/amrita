@@ -48,6 +48,12 @@ const navItems = [
     sublabel: 'Camera magic',
   },
   {
+    href: '/games/portal',
+    emoji: '🧪',
+    label: 'Game Portal',
+    sublabel: 'Premium adventures',
+  },
+  {
     href: '/cats',
     emoji: '🐱',
     label: 'Cats',
