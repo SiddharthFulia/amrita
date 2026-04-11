@@ -348,10 +348,13 @@ export default function JumpPage() {
         {/* Idle overlay */}
         {gameState === "idle" && (
           <div
+            onClick={startGame}
+            onTouchStart={startGame}
             style={{
               position: "absolute",
               inset: 0,
               background: "#07071aCC",
+              cursor: "pointer",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",

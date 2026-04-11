@@ -542,6 +542,8 @@ export default function DoodleJumpPage() {
         {/* idle overlay */}
         {state === "idle" && (
           <div
+            onClick={startGame}
+            onTouchStart={startGame}
             style={{
               position: "absolute",
               inset: 0,
@@ -551,6 +553,7 @@ export default function DoodleJumpPage() {
               alignItems: "center",
               background: "rgba(7,7,26,0.55)",
               borderRadius: 16,
+              cursor: "pointer",
             }}
           >
             <button

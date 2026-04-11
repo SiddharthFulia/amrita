@@ -133,40 +133,42 @@ export default function TinkerbellPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Upload handler
   const handleFiles = (files) => {
+    const beUrl = process.env.NEXT_PUBLIC_BE_URL || 'http://72.61.236.205';
     const arr = [...files];
-    arr.forEach(file => {
+    arr.forEach(async (file) => {
       const uid = `${Date.now()}-${Math.random()}`;
       setUploads(prev => [...prev, { id: uid, name: file.name, progress: 0, done: false, error: null }]);
 
-      const fd = new FormData();
-      fd.append('file', file);
-
-      const xhr = new XMLHttpRequest();
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          const pct = Math.round((e.loaded / e.total) * 100);
-          setUploads(prev => prev.map(u => u.id === uid ? { ...u, progress: pct } : u));
-        }
-      };
-      xhr.onload = () => {
-        if (xhr.status === 200) {
-          const data = JSON.parse(xhr.responseText);
-          if (data.photo) {
-            setPhotos(prev => [data.photo, ...prev]);
+      try {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.onprogress = (progressEvent) => {
+          if (progressEvent.lengthComputable) {
+            const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+            setUploads(prev => prev.map(uploadItem => uploadItem.id === uid ? { ...uploadItem, progress: percent } : uploadItem));
           }
-          setUploads(prev => prev.map(u => u.id === uid ? { ...u, progress: 100, done: true } : u));
-          setTimeout(() => setUploads(prev => prev.filter(u => u.id !== uid)), 3000);
-        } else {
-          setUploads(prev => prev.map(u => u.id === uid ? { ...u, error: 'Upload failed', done: true } : u));
-        }
-      };
-      xhr.onerror = () => {
-        setUploads(prev => prev.map(u => u.id === uid ? { ...u, error: 'Network error', done: true } : u));
-      };
-      xhr.open('POST', '/api/tinkerbell');
-      xhr.send(fd);
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            const responseData = JSON.parse(xhr.responseText);
+            const photoData = responseData.data;
+            if (photoData) setPhotos(prev => [photoData, ...prev]);
+            setUploads(prev => prev.map(uploadItem => uploadItem.id === uid ? { ...uploadItem, progress: 100, done: true } : uploadItem));
+            setTimeout(() => setUploads(prev => prev.filter(uploadItem => uploadItem.id !== uid)), 3000);
+          } else {
+            setUploads(prev => prev.map(uploadItem => uploadItem.id === uid ? { ...uploadItem, error: 'Upload failed', done: true } : uploadItem));
+          }
+        };
+        xhr.onerror = () => {
+          setUploads(prev => prev.map(uploadItem => uploadItem.id === uid ? { ...uploadItem, error: 'Network error', done: true } : uploadItem));
+        };
+        xhr.open('POST', `${beUrl}/api/upload`);
+        xhr.setRequestHeader('X-File-Name', file.name);
+        xhr.setRequestHeader('X-Folder', 'tinkerbell');
+        xhr.send(file);
+      } catch (uploadError) {
+        setUploads(prev => prev.map(uploadItem => uploadItem.id === uid ? { ...uploadItem, error: uploadError.message, done: true } : uploadItem));
+      }
     });
   };
 

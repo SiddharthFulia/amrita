@@ -540,12 +540,14 @@ export default function MemoryGlitch({ onBack }) {
                         key={wIdx}
                         style={{
                           display: 'inline-block',
-                          padding: '1px 2px',
+                          padding: '1px 3px',
                           borderRadius: 4,
-                          color: isThisFound ? '#4caf50' : 'rgba(255,255,255,0.7)',
+                          color: isThisFound ? '#4caf50' : isThisDiff ? 'rgba(76,175,80,0.7)' : 'rgba(255,255,255,0.7)',
                           fontWeight: isThisFound ? 700 : 400,
                           textShadow: isThisFound ? '0 0 8px rgba(76,175,80,0.4)' : 'none',
-                          background: isThisFound ? 'rgba(76,175,80,0.08)' : 'transparent',
+                          background: isThisFound ? 'rgba(76,175,80,0.12)' : 'transparent',
+                          textDecoration: isThisFound ? 'underline' : 'none',
+                          textDecorationColor: isThisFound ? '#4caf50' : 'transparent',
                           transition: 'all 0.3s',
                         }}
                       >

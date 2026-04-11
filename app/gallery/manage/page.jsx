@@ -82,57 +82,64 @@ function UploadSection({ password, onUploaded, onAllDone }) {
   const [uploads, setUploads] = useState([]);
   const inputRef = useRef(null);
 
-  const uploadFile = (file) => {
-    const id = `${file.name}-${Date.now()}`;
-    setUploads(prev => [...prev, { id, name: file.name, status: 'uploading', progress: 0 }]);
-
-    const fd = new FormData();
-    fd.append('file', file);
-
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', '/api/photos');
-    xhr.setRequestHeader('x-gallery-password', password);
-
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) {
-        const pct = Math.round((e.loaded / e.total) * 100);
-        setUploads(prev => prev.map(u => u.id === id ? { ...u, progress: pct } : u));
-      }
-    };
+  const uploadFile = async (file) => {
+    const uploadId = `${file.name}-${Date.now()}`;
+    setUploads(prev => [...prev, { id: uploadId, name: file.name, status: 'uploading', progress: 0 }]);
 
     const checkAllDone = (updatedList) => {
-      const allTerminal = updatedList.every(u => u.status === 'done' || u.status === 'error');
+      const allTerminal = updatedList.every(uploadItem => uploadItem.status === 'done' || uploadItem.status === 'error');
       if (allTerminal && updatedList.length > 0) setTimeout(() => onAllDone?.(), 0);
     };
 
-    xhr.onload = () => {
-      try {
-        const data = JSON.parse(xhr.responseText);
-        if (data.error) throw new Error(data.error);
+    try {
+      const beUrl = process.env.NEXT_PUBLIC_BE_URL || 'http://72.61.236.205';
+      const xhr = new XMLHttpRequest();
+      xhr.upload.onprogress = (progressEvent) => {
+        if (progressEvent.lengthComputable) {
+          const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+          setUploads(prev => prev.map(uploadItem => uploadItem.id === uploadId ? { ...uploadItem, progress: percent } : uploadItem));
+        }
+      };
+      xhr.onload = () => {
+        try {
+          if (xhr.status < 200 || xhr.status >= 300) throw new Error('Upload failed');
+          const responseData = JSON.parse(xhr.responseText);
+          const photoData = responseData.data;
+          if (photoData) {
+            photoData.isVideo = photoData.mimeType?.startsWith('video/');
+          }
+          setUploads(prev => {
+            const updated = prev.map(uploadItem => uploadItem.id === uploadId ? { ...uploadItem, status: 'done', progress: 100 } : uploadItem);
+            checkAllDone(updated);
+            return updated;
+          });
+          if (photoData) onUploaded(photoData);
+        } catch (parseError) {
+          setUploads(prev => {
+            const updated = prev.map(uploadItem => uploadItem.id === uploadId ? { ...uploadItem, status: 'error', error: parseError.message } : uploadItem);
+            checkAllDone(updated);
+            return updated;
+          });
+        }
+      };
+      xhr.onerror = () => {
         setUploads(prev => {
-          const updated = prev.map(u => u.id === id ? { ...u, status: 'done', progress: 100 } : u);
+          const updated = prev.map(uploadItem => uploadItem.id === uploadId ? { ...uploadItem, status: 'error', error: 'Network error' } : uploadItem);
           checkAllDone(updated);
           return updated;
         });
-        onUploaded(data.photo);
-      } catch (err) {
-        setUploads(prev => {
-          const updated = prev.map(u => u.id === id ? { ...u, status: 'error', error: err.message } : u);
-          checkAllDone(updated);
-          return updated;
-        });
-      }
-    };
-
-    xhr.onerror = () => {
+      };
+      xhr.open('POST', `${beUrl}/api/upload`);
+      xhr.setRequestHeader('X-File-Name', file.name);
+      xhr.setRequestHeader('X-Folder', 'gallery');
+      xhr.send(file);
+    } catch (uploadError) {
       setUploads(prev => {
-        const updated = prev.map(u => u.id === id ? { ...u, status: 'error', error: 'Network error' } : u);
+        const updated = prev.map(uploadItem => uploadItem.id === uploadId ? { ...uploadItem, status: 'error', error: uploadError.message } : uploadItem);
         checkAllDone(updated);
         return updated;
       });
-    };
-
-    xhr.send(fd);
+    }
   };
 
   const handleFiles = (files) => {

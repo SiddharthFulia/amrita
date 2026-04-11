@@ -265,7 +265,7 @@ export default function SnakePage() {
           onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
         />
         {phase === 'idle' && (
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(7,7,26,0.85)', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          <div onClick={startGame} onTouchStart={startGame} style={{ position: 'absolute', inset: 0, background: 'rgba(7,7,26,0.85)', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}>
             <div style={{ fontSize: '3rem' }}>🐱</div>
             <div style={{ fontFamily: "'Dancing Script', cursive", fontSize: '1.8rem', color: '#e91e8c' }}>Cat Snake!</div>
             <div style={{ color: '#b388ff', fontSize: '0.95rem' }}>Eat the hearts ❤️</div>
