@@ -92,7 +92,7 @@ function UploadSection({ password, onUploaded, onAllDone }) {
     };
 
     try {
-      const beUrl = process.env.NEXT_PUBLIC_BE_URL || 'http://72.61.236.205';
+      const beUrl = process.env.NEXT_PUBLIC_BE_URL || 'https://api.cognivex.cloud';
       const xhr = new XMLHttpRequest();
       xhr.upload.onprogress = (progressEvent) => {
         if (progressEvent.lengthComputable) {

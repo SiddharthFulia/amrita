@@ -46,7 +46,7 @@ export async function bumpStreak() {
 
 // ── AI Chat ──
 // Tries the backend at localhost:4001 first (Ollama), falls back to local responses.
-const BE_URL = process.env.NEXT_PUBLIC_BE_URL || 'http://72.61.236.205';
+const BE_URL = process.env.NEXT_PUBLIC_BE_URL || 'https://api.cognivex.cloud';
 
 const FALLBACK_RESPONSES = [
   "That's an interesting lead... have you checked the notes app?",

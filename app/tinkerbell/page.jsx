@@ -134,7 +134,7 @@ export default function TinkerbellPage() {
   useEffect(() => { load(); }, [load]);
 
   const handleFiles = (files) => {
-    const beUrl = process.env.NEXT_PUBLIC_BE_URL || 'http://72.61.236.205';
+    const beUrl = process.env.NEXT_PUBLIC_BE_URL || 'https://api.cognivex.cloud';
     const arr = [...files];
     arr.forEach(async (file) => {
       const uid = `${Date.now()}-${Math.random()}`;
