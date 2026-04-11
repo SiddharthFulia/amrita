@@ -163,8 +163,9 @@ export default function TinkerbellPage() {
           setUploads(prev => prev.map(uploadItem => uploadItem.id === uid ? { ...uploadItem, error: 'Network error', done: true } : uploadItem));
         };
         xhr.open('POST', `${beUrl}/api/upload`);
-        xhr.setRequestHeader('X-File-Name', file.name);
+        xhr.setRequestHeader('X-File-Name', encodeURIComponent(file.name));
         xhr.setRequestHeader('X-Folder', 'tinkerbell');
+        xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
         xhr.send(file);
       } catch (uploadError) {
         setUploads(prev => prev.map(uploadItem => uploadItem.id === uid ? { ...uploadItem, error: uploadError.message, done: true } : uploadItem));
