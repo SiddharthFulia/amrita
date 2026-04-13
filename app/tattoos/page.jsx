@@ -137,7 +137,7 @@ export default function TattooSearchPage() {
       });
       if (!res.ok) throw new Error('Save failed');
       setSavedImages((prev) => ({ ...prev, [key]: true }));
-      showToast('Saved! \u2713');
+      showToast('Saved! ✓');
     } catch {
       showToast('Failed to save. Try again?', 'error');
     } finally {
@@ -145,7 +145,12 @@ export default function TattooSearchPage() {
     }
   };
 
+  // Auto-load trending tattoos on page load
   useEffect(() => {
+    const initialQuery = 'minimalist small';
+    setQuery(initialQuery);
+    setActiveCategory('Minimalist');
+    fetchImages(initialQuery, 1, false);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
@@ -250,7 +255,7 @@ export default function TattooSearchPage() {
             ) : (
               <>
                 <p style={{ fontSize: '48px', marginBottom: '16px' }}>\uD83E\uDE76</p>
-                <p style={styles.emptyText}>Search for tattoo ideas above \u2728</p>
+                <p style={styles.emptyText}>Search for tattoo ideas above ✨</p>
               </>
             )}
           </div>
