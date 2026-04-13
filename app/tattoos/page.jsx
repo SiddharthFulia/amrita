@@ -99,10 +99,25 @@ export default function TattooSearchPage() {
   };
 
   const handleLoadMore = () => {
+    if (loadingMore) return;
     const nextPage = page + 1;
     setPage(nextPage);
     fetchImages(query, nextPage, true);
   };
+
+  // Auto-load more when scrolled 50%
+  useEffect(() => {
+    if (!hasMore || loading || loadingMore || !hasSearched) return;
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + window.innerHeight;
+      const pageHeight = document.documentElement.scrollHeight;
+      if (scrollPosition >= pageHeight * 0.5) {
+        handleLoadMore();
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [hasMore, loading, loadingMore, hasSearched, page, query]);
 
   const handleSave = async (image, index) => {
     const key = image.url || index;
