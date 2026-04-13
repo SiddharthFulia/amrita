@@ -66,6 +66,18 @@ const navItems = [
     sublabel: "Amrita's collection",
   },
   {
+    href: '/tattoos',
+    emoji: '🖤',
+    label: 'Tattoo Ideas',
+    sublabel: 'Find your ink',
+  },
+  {
+    href: '/saved-tattoos',
+    emoji: '💉',
+    label: 'Saved Tattoos',
+    sublabel: 'Your collection',
+  },
+  {
     href: '/tinkerbell',
     emoji: '🐈',
     label: 'Tinkerbell',
