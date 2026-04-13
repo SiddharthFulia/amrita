@@ -105,19 +105,25 @@ export default function TattooSearchPage() {
     fetchImages(query, nextPage, true);
   };
 
-  // Auto-load more when scrolled 50%
+  // Infinite scroll — load more when sentinel enters viewport
+  const sentinelRef = useRef(null);
   useEffect(() => {
-    if (!hasMore || loading || loadingMore || !hasSearched) return;
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY + window.innerHeight;
-      const pageHeight = document.documentElement.scrollHeight;
-      if (scrollPosition >= pageHeight * 0.5) {
-        handleLoadMore();
-      }
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [hasMore, loading, loadingMore, hasSearched, page, query]);
+    if (!hasMore || loading || !hasSearched) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loadingMore) {
+          const nextPage = page + 1;
+          setPage(nextPage);
+          fetchImages(query, nextPage, true);
+        }
+      },
+      { rootMargin: '50vh' }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadingMore, hasSearched, page, query, fetchImages]);
 
   const handleSave = async (image, index) => {
     const key = image.url || index;
@@ -314,16 +320,13 @@ export default function TattooSearchPage() {
               })}
             </div>
 
-            {/* Load More */}
-            {hasMore && (
-              <div style={styles.loadMoreWrapper}>
-                <button
-                  onClick={handleLoadMore}
-                  disabled={loadingMore}
-                  style={styles.loadMoreButton}
-                >
-                  {loadingMore ? 'Loading...' : 'Load More'}
-                </button>
+            {/* Sentinel for infinite scroll — triggers 600px before visible */}
+            {hasMore && <div ref={sentinelRef} style={{ height: 1 }} />}
+
+            {/* Loading indicator */}
+            {loadingMore && (
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <div style={{ color: '#e91e8c', fontSize: '14px' }}>Loading more...</div>
               </div>
             )}
           </>

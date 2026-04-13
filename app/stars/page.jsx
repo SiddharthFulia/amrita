@@ -600,22 +600,78 @@ export default function StarsPage() {
           {getQuote(selectedDate)}
         </p>
 
-        <p style={{
-          color: PURPLE,
-          fontSize: 15,
-          marginTop: 16,
-          opacity: 0.7,
-        }}>
-          The sky you were both under that night ✨
-        </p>
+        {/* Date-specific flashy card */}
+        {(() => {
+          const dateCards = {
+            '2025-10-29': {
+              emoji: '💬', color: '#4fc3f7', title: 'Where It All Began',
+              note: 'Two strangers. One conversation. The universe knew exactly what it was doing that day.',
+              astro: 'Mercury was in Scorpio — the sign of deep, intense connections. Your first words carried more weight than you realized.',
+              tags: ['🔮 Fated', '💫 Destiny', '🌙 Scorpio Season'],
+            },
+            '2025-10-31': {
+              emoji: '🎃', color: '#ff9800', title: 'Halloween Magic',
+              note: 'Everyone was wearing masks that night. But when you two met, all the walls came down.',
+              astro: 'The Sun was in Scorpio and the Moon was bright — a night of transformation. Meeting on Halloween means your love story started with magic.',
+              tags: ['✨ Magical', '🦋 Transformation', '🌕 Moonlit'],
+            },
+            '2025-11-09': {
+              emoji: '💕', color: '#e91e8c', title: 'The Day She Chose You',
+              note: 'She looked at you and decided — this is the one. Some decisions change your whole life. This was hers.',
+              astro: 'Venus was in Sagittarius — bold, fearless love. She didn\'t hesitate. Taurus women know what they want, and Virgo men are worth the chase.',
+              tags: ['❤️ Bold Love', '♉♍ Perfect Match', '🔥 No Hesitation'],
+            },
+          };
+          const card = dateCards[selectedDate];
+          if (!card) return null;
+          return (
+            <div style={{
+              marginTop: 24, width: '100%', maxWidth: 480,
+              background: `linear-gradient(135deg, ${card.color}10, rgba(179,136,255,0.05))`,
+              border: `1px solid ${card.color}30`,
+              borderRadius: 20, padding: '24px 22px', textAlign: 'center',
+              backdropFilter: 'blur(12px)',
+            }}>
+              <div style={{ fontSize: 40, marginBottom: 8 }}>{card.emoji}</div>
+              <div style={{
+                fontFamily: FONT_TITLE, fontSize: 20, color: card.color,
+                marginBottom: 8,
+              }}>{card.title}</div>
+              <p style={{
+                fontSize: 14, color: 'rgba(255,255,255,0.6)',
+                lineHeight: 1.7, margin: '0 0 16px', fontStyle: 'italic',
+              }}>{card.note}</p>
+              <div style={{
+                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)',
+                borderRadius: 14, padding: '12px 16px', marginBottom: 14,
+              }}>
+                <div style={{ fontSize: 11, color: '#ffd54f', fontWeight: 700, marginBottom: 6, letterSpacing: '0.08em' }}>
+                  🌟 ASTRO NOTE
+                </div>
+                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, margin: 0 }}>
+                  {card.astro}
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
+                {card.tags.map(tag => (
+                  <span key={tag} style={{
+                    fontSize: 10, padding: '4px 10px', borderRadius: 20,
+                    background: `${card.color}12`, border: `1px solid ${card.color}25`,
+                    color: card.color,
+                  }}>{tag}</span>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
-        {/* moon phase label */}
+        {/* Moon phase */}
         <p style={{
           color: 'rgba(255,255,255,0.35)',
           fontSize: 12,
-          marginTop: 10,
+          marginTop: 16,
         }}>
-          Moon phase: {(() => {
+          {(() => {
             const phase = getMoonPhase(selectedDate);
             if (phase < 1.85) return '🌑 New Moon';
             if (phase < 7.38) return '🌒 Waxing Crescent';
