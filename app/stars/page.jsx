@@ -11,9 +11,9 @@ const FONT_TITLE = "'Dancing Script', cursive";
 const FONT_BODY = "'Inter', sans-serif";
 
 const SPECIAL_DATES = [
-  { title: 'First Conversation', date: '2025-10-29', emoji: '💬' },
-  { title: 'The Day We Met', date: '2025-10-31', emoji: '💫' },
-  { title: 'She Asked Me Out', date: '2025-11-09', emoji: '💕' },
+  { title: 'First Conversation', date: '2025-10-29', emoji: '💬', desc: 'The first words that changed everything. Two strangers became something more.', color: '#4fc3f7' },
+  { title: 'The Day We Met', date: '2025-10-31', emoji: '💫', desc: 'Halloween night — but the real magic was meeting you in person for the first time.', color: '#ff9800' },
+  { title: 'She Asked Me To Be Her BF', date: '2025-11-09', emoji: '💕', desc: 'She asked. He said yes. And the rest is history being written every single day.', color: '#e91e8c' },
 ];
 
 const QUOTES = [
@@ -118,7 +118,7 @@ export default function StarsPage() {
   const lastShootRef = useRef(0);
   const starsDataRef = useRef([]);
 
-  const [selectedDate, setSelectedDate] = useState('2024-12-15');
+  const [selectedDate, setSelectedDate] = useState('2025-10-29');
   const [customDate, setCustomDate] = useState('');
   const [canvasSize, setCanvasSize] = useState({ w: 900, h: 500 });
 
@@ -447,40 +447,53 @@ export default function StarsPage() {
       }}>
         {SPECIAL_DATES.map((item) => {
           const isActive = selectedDate === item.date;
+          const itemColor = item.color || PINK;
           return (
             <button
               key={item.date}
               onClick={() => setSelectedDate(item.date)}
               style={{
                 background: isActive
-                  ? `linear-gradient(135deg, ${PINK}25, ${PURPLE}25)`
-                  : 'rgba(255,255,255,0.04)',
+                  ? `linear-gradient(135deg, ${itemColor}20, ${PURPLE}15)`
+                  : 'rgba(255,255,255,0.03)',
                 border: isActive
-                  ? `1.5px solid ${PINK}60`
+                  ? `1.5px solid ${itemColor}70`
                   : '1.5px solid rgba(255,255,255,0.08)',
-                borderRadius: 14,
-                padding: '14px 18px',
+                borderRadius: 18,
+                padding: '18px 20px',
                 cursor: 'pointer',
                 color: '#fff',
-                textAlign: 'center',
-                minWidth: 130,
+                textAlign: 'left',
+                minWidth: 200,
+                maxWidth: 260,
                 flexShrink: 0,
-                transition: 'all 0.25s ease',
-                transform: isActive ? 'scale(1.04)' : 'scale(1)',
+                transition: 'all 0.3s ease',
+                transform: isActive ? 'translateY(-4px)' : 'translateY(0)',
+                boxShadow: isActive ? `0 8px 30px ${itemColor}20` : 'none',
+                backdropFilter: 'blur(10px)',
               }}
             >
-              <div style={{ fontSize: 22, marginBottom: 6 }}>{item.emoji}</div>
-              <div style={{
-                fontFamily: FONT_TITLE,
-                fontSize: 15,
-                color: isActive ? PINK : 'rgba(255,255,255,0.85)',
-                marginBottom: 4,
-              }}>
-                {item.title}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <div style={{
+                  fontSize: 28, width: 44, height: 44,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: `${itemColor}15`, borderRadius: 12,
+                  border: `1px solid ${itemColor}30`,
+                }}>{item.emoji}</div>
+                <div>
+                  <div style={{
+                    fontFamily: FONT_TITLE, fontSize: 15, fontWeight: 700,
+                    color: isActive ? itemColor : 'rgba(255,255,255,0.9)',
+                  }}>{item.title}</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{formatDate(item.date)}</div>
+                </div>
               </div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
-                {formatDate(item.date)}
-              </div>
+              {item.desc && (
+                <div style={{
+                  fontSize: 11, color: 'rgba(255,255,255,0.35)',
+                  lineHeight: 1.5, fontStyle: 'italic',
+                }}>{item.desc}</div>
+              )}
             </button>
           );
         })}
@@ -614,6 +627,73 @@ export default function StarsPage() {
             return '🌘 Waning Crescent';
           })()}
         </p>
+
+        {/* Astrology Section */}
+        <div style={{
+          marginTop: 32, width: '100%', maxWidth: 500,
+          background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20,
+          padding: '24px 20px', textAlign: 'center',
+        }}>
+          <div style={{ fontSize: 12, color: PURPLE, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 16 }}>
+            ✨ Written in the Stars ✨
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginBottom: 20, flexWrap: 'wrap' }}>
+            <div style={{
+              background: `${PINK}12`, border: `1px solid ${PINK}30`, borderRadius: 16,
+              padding: '16px 20px', minWidth: 140, textAlign: 'center',
+            }}>
+              <div style={{ fontSize: 32, marginBottom: 4 }}>♉</div>
+              <div style={{ fontFamily: FONT_TITLE, fontSize: 16, color: PINK, marginBottom: 2 }}>Amrita</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>Taurus · May 12</div>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>Earth sign · Loyal · Devoted</div>
+            </div>
+            <div style={{
+              display: 'flex', alignItems: 'center', fontSize: 24,
+              color: '#ffd54f', alignSelf: 'center',
+            }}>💕</div>
+            <div style={{
+              background: `${PURPLE}12`, border: `1px solid ${PURPLE}30`, borderRadius: 16,
+              padding: '16px 20px', minWidth: 140, textAlign: 'center',
+            }}>
+              <div style={{ fontSize: 32, marginBottom: 4 }}>♍</div>
+              <div style={{ fontFamily: FONT_TITLE, fontSize: 16, color: PURPLE, marginBottom: 2 }}>Siddharth</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>Virgo · Sep 18</div>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>Earth sign · Caring · Dedicated</div>
+            </div>
+          </div>
+
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(233,30,140,0.08), rgba(179,136,255,0.08))',
+            border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14,
+            padding: '14px 16px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: 18 }}>🌟</span>
+              <span style={{
+                fontSize: 13, fontWeight: 700,
+                background: `linear-gradient(135deg, ${PINK}, #ffd54f)`,
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+              }}>98% Compatibility</span>
+              <span style={{ fontSize: 18 }}>🌟</span>
+            </div>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, margin: 0 }}>
+              Taurus & Virgo — both Earth signs. One of the strongest matches in the zodiac.
+              Grounded, loyal, and deeply devoted. You share the same values, the same wavelength,
+              and the same quiet understanding that says everything without words. ♥
+            </p>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 12, flexWrap: 'wrap' }}>
+              {['🌍 Both Earth', '💎 Loyal', '🤝 Trust', '🔥 Passion', '♾️ Soulmates'].map(tag => (
+                <span key={tag} style={{
+                  fontSize: 10, padding: '3px 10px', borderRadius: 20,
+                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+                  color: 'rgba(255,255,255,0.4)',
+                }}>{tag}</span>
+              ))}
+            </div>
+          </div>
+        </div>
 
         {/* download button */}
         <button
