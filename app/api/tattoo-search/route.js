@@ -1,44 +1,28 @@
 import { NextResponse } from 'next/server';
 
+const BE_URL = process.env.NEXT_PUBLIC_BE_URL || 'https://api.cognivex.cloud';
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q') || 'tattoo';
-    const page = parseInt(searchParams.get('page') || '1');
+    const count = searchParams.get('count') || '20';
 
-    const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
-    const searchCx = process.env.GOOGLE_SEARCH_CX;
+    const beResponse = await fetch(`${BE_URL}/api/image-search?q=${encodeURIComponent(query + ' tattoo')}&count=${count}`, {
+      headers: { 'Content-Type': 'application/json' },
+    });
 
-    if (!apiKey || !searchCx) {
-      return NextResponse.json({ error: 'Search not configured', images: [] }, { status: 500 });
-    }
+    if (!beResponse.ok) throw new Error(`BE returned ${beResponse.status}`);
 
-    const startIndex = (page - 1) * 10 + 1;
-    const searchQuery = encodeURIComponent(`${query} tattoo`);
-
-    const googleUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchCx}&q=${searchQuery}&searchType=image&num=10&start=${startIndex}&imgSize=large&safe=active`;
-
-    const googleResponse = await fetch(googleUrl);
-
-    if (!googleResponse.ok) {
-      const errorData = await googleResponse.json();
-      throw new Error(errorData.error?.message || `Google returned ${googleResponse.status}`);
-    }
-
-    const googleData = await googleResponse.json();
-    const totalResults = parseInt(googleData.searchInformation?.totalResults || '0');
-    const totalPages = Math.min(Math.ceil(totalResults / 10), 10);
-
-    const images = (googleData.items || []).map(item => ({
-      url: item.link,
-      thumbnail: item.image?.thumbnailLink || item.link,
-      source: item.displayLink || '',
+    const beData = await beResponse.json();
+    const images = (beData.data?.images || []).map(item => ({
+      url: item.url,
+      thumbnail: item.thumbnail || item.url,
+      source: item.source || '',
       title: item.title || query,
-      width: item.image?.width,
-      height: item.image?.height,
     }));
 
-    return NextResponse.json({ images, page, hasMore: page < totalPages });
+    return NextResponse.json({ images, page: 1, hasMore: images.length >= 10 });
   } catch (searchError) {
     return NextResponse.json({ error: searchError.message, images: [] }, { status: 500 });
   }
