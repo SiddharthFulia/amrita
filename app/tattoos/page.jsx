@@ -111,7 +111,8 @@ export default function TattooSearchPage() {
     setSavingImages((prev) => ({ ...prev, [key]: true }));
 
     try {
-      const res = await fetch('/api/tattoo-saves', {
+      const beUrl = process.env.NEXT_PUBLIC_BE_URL || 'https://api.cognivex.cloud';
+      const res = await fetch(`${beUrl}/api/tattoo-save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

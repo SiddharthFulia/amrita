@@ -78,6 +78,12 @@ const navItems = [
     sublabel: 'Your collection',
   },
   {
+    href: '/stars',
+    emoji: '🌌',
+    label: 'Star Map',
+    sublabel: 'Our night sky',
+  },
+  {
     href: '/tinkerbell',
     emoji: '🐈',
     label: 'Tinkerbell',
