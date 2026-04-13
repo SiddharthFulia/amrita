@@ -119,7 +119,7 @@ export default function TattooSearchPage() {
           fetchImages(query, nextPage, true);
         }
       },
-      { rootMargin: '50vh' }
+      { rootMargin: `${Math.round(window.innerHeight * 0.5)}px` }
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
