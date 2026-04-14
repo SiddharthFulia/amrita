@@ -5,4 +5,6 @@ export const ENDPOINTS = {
   STATS: '/api/stats',
   MEMORY_GLITCH: '/api/memory-glitch/generate',
   UPLOAD: '/api/upload',
+  FACE_ANALYZE: '/api/face-analyze',
+  FACE_HEALTH: '/api/face-health',
 };

@@ -27,3 +27,11 @@ export async function fetchStats() {
 export async function generateMemoryGlitch(difficulty = 'easy') {
   return post(ENDPOINTS.MEMORY_GLITCH, { difficulty }, { timeout: 30000 });
 }
+
+export async function analyzeFace(imageData) {
+  return post(ENDPOINTS.FACE_ANALYZE, { image: imageData }, { timeout: 10000 });
+}
+
+export async function checkFaceHealth() {
+  return get(ENDPOINTS.FACE_HEALTH, {}, { timeout: 3000 });
+}

@@ -120,6 +120,12 @@ const navItems = [
     sublabel: 'Snapchat style!',
   },
   {
+    href: '/faceai',
+    emoji: '🧠',
+    label: 'Face AI',
+    sublabel: 'OpenCV analysis',
+  },
+  {
     href: '/whisper',
     emoji: '✨',
     label: 'Whisper',
