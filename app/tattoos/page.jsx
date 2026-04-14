@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 
 const CATEGORIES = [
@@ -10,7 +10,17 @@ const CATEGORIES = [
   'Star', 'Infinity',
 ];
 
-const IMAGES_PER_PAGE = 20;
+// Backend caps at ~40 results and ignores page param, so we vary the query
+// with suffixes to get different image sets and deduplicate by URL.
+const QUERY_SUFFIXES = [
+  '', 'ideas', 'designs', 'inspiration', 'aesthetic', 'art',
+  'style', 'ink', 'body art', 'creative', 'unique', 'beautiful',
+  'trending', 'popular', 'best', 'cool', 'simple', 'elegant',
+  'cute', 'small', 'delicate', 'fine line', 'minimalist', 'dainty',
+  'women', 'feminine', 'meaningful', 'symbolic', 'pinterest',
+  'tumblr', 'pretty', 'gorgeous', 'stunning', 'artistic',
+  'modern', 'classic', 'detailed', 'abstract', 'nature',
+];
 
 export default function TattooSearchPage() {
   const [query, setQuery] = useState('');
@@ -19,7 +29,6 @@ export default function TattooSearchPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [savedImages, setSavedImages] = useState({});
   const [savingImages, setSavingImages] = useState({});
@@ -28,6 +37,8 @@ export default function TattooSearchPage() {
 
   const debounceRef = useRef(null);
   const toastTimeoutRef = useRef(null);
+  const loadingMoreRef = useRef(false);
+  const hasMoreRef = useRef(false);
 
   const showToast = useCallback((message, type = 'success') => {
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
@@ -35,43 +46,77 @@ export default function TattooSearchPage() {
     toastTimeoutRef.current = setTimeout(() => setToast(null), 2500);
   }, []);
 
+  // Track seen URLs to deduplicate across batches
+  const seenUrlsRef = useRef(new Set());
+
   const fetchImages = useCallback(async (searchQuery, pageNum = 1, append = false) => {
     if (!searchQuery.trim()) return;
 
     if (pageNum === 1) {
       setLoading(true);
       setError(false);
+      seenUrlsRef.current = new Set();
     } else {
       setLoadingMore(true);
+      loadingMoreRef.current = true;
     }
 
     try {
-      const res = await fetch(
-        `/api/tattoo-search?q=${encodeURIComponent(searchQuery)}&page=${pageNum}&limit=${IMAGES_PER_PAGE}`
-      );
-      if (!res.ok) throw new Error('Fetch failed');
-      const data = await res.json();
+      // For initial load, fire 3 queries in parallel to get ~120 images
+      // For subsequent loads, fire 2 queries to get ~80 new images
+      const batchCount = pageNum === 1 ? 3 : 2;
+      const startIdx = pageNum === 1 ? 0 : 3 + (pageNum - 2) * 2;
+
+      const fetches = [];
+      for (let i = 0; i < batchCount; i++) {
+        const suffixIdx = (startIdx + i) % QUERY_SUFFIXES.length;
+        const suffix = QUERY_SUFFIXES[suffixIdx];
+        const q = suffix ? `${searchQuery} ${suffix}` : searchQuery;
+        fetches.push(
+          fetch(`/api/tattoo-search?q=${encodeURIComponent(q)}&count=40&page=1`)
+            .then(r => r.ok ? r.json() : { images: [] })
+            .catch(() => ({ images: [] }))
+        );
+      }
+
+      const results = await Promise.all(fetches);
+      const allNew = results.flatMap(r => r.images || []);
+
+      // Deduplicate by URL
+      const unique = [];
+      for (const img of allNew) {
+        const url = img.url || img.thumbnail;
+        if (url && !seenUrlsRef.current.has(url)) {
+          seenUrlsRef.current.add(url);
+          unique.push(img);
+        }
+      }
 
       if (append) {
-        setImages((prev) => [...prev, ...(data.images || [])]);
+        setImages(prev => [...prev, ...unique]);
       } else {
-        setImages(data.images || []);
+        setImages(unique);
       }
-      setHasMore((data.images || []).length >= IMAGES_PER_PAGE);
+
+      // Keep going as long as we got some new unique results
+      const moreAvailable = unique.length >= 3;
+      hasMoreRef.current = moreAvailable;
       setHasSearched(true);
     } catch {
       setError(true);
       if (!append) setImages([]);
+      hasMoreRef.current = false;
     } finally {
       setLoading(false);
       setLoadingMore(false);
+      loadingMoreRef.current = false;
     }
   }, []);
 
-  const handleSearch = useCallback((searchQuery) => {
+  const handleSearch = (searchQuery) => {
     setPage(1);
     fetchImages(searchQuery, 1, false);
-  }, [fetchImages]);
+  };
 
   const handleInputChange = (e) => {
     const val = e.target.value;
@@ -98,32 +143,27 @@ export default function TattooSearchPage() {
     handleSearch(searchTerm);
   };
 
-  const handleLoadMore = () => {
-    if (loadingMore) return;
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchImages(query, nextPage, true);
-  };
+  // Infinite scroll — poll every 200ms, if near bottom and not already loading, fetch more
+  const queryRef = useRef(query);
+  useEffect(() => { queryRef.current = query; }, [query]);
+  const pageRef = useRef(1);
+  useEffect(() => { pageRef.current = page; }, [page]);
 
-  // Infinite scroll — load more when sentinel enters viewport
-  const sentinelRef = useRef(null);
   useEffect(() => {
-    if (!hasMore || loading || !hasSearched) return;
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !loadingMore) {
-          const nextPage = page + 1;
-          setPage(nextPage);
-          fetchImages(query, nextPage, true);
-        }
-      },
-      { rootMargin: `${Math.round(window.innerHeight * 2)}px` }
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [hasMore, loading, loadingMore, hasSearched, page, query, fetchImages]);
+    if (!hasSearched) return;
+    const interval = setInterval(() => {
+      if (!hasMoreRef.current || loadingMoreRef.current) return;
+      const remaining = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
+      if (remaining < window.innerHeight * 1.5) {
+        loadingMoreRef.current = true;
+        const nextPage = pageRef.current + 1;
+        pageRef.current = nextPage;
+        setPage(nextPage);
+        fetchImages(queryRef.current, nextPage, true);
+      }
+    }, 200);
+    return () => clearInterval(interval);
+  }, [hasSearched, fetchImages]);
 
   const handleSave = async (image, index) => {
     const key = image.url || index;
@@ -163,6 +203,7 @@ export default function TattooSearchPage() {
     };
   }, []);
 
+
   return (
     <div style={styles.page}>
       {/* Toast */}
@@ -180,8 +221,8 @@ export default function TattooSearchPage() {
 
       {/* Header */}
       <header style={styles.header}>
-        <Link href="/" style={styles.backLink}>\u2190 Back</Link>
-        <h1 style={styles.title}>Tattoo Ideas \uD83D\uDDA4</h1>
+        <Link href="/" style={styles.backLink}>← Back</Link>
+        <h1 style={styles.title}>Tattoo Ideas 🖤</h1>
         <p style={styles.subtitle}>find your perfect ink</p>
       </header>
 
@@ -277,56 +318,54 @@ export default function TattooSearchPage() {
                 const isSaving = savingImages[key];
 
                 return (
-                  <div key={`${key}-${i}`} style={styles.card} className="tattoo-card">
-                    <div style={styles.imageContainer}>
-                      <img
-                        src={img.thumbnail || img.url}
-                        alt="Tattoo idea"
-                        referrerPolicy="no-referrer"
-                        loading="lazy"
-                        style={styles.image}
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                        }}
-                      />
-                      {/* Desktop hover overlay */}
-                      <div style={styles.overlay} className="card-overlay">
-                        <button
-                          onClick={() => handleSave(img, i)}
-                          disabled={isSaved || isSaving}
-                          style={{
-                            ...styles.saveButtonOverlay,
-                            ...(isSaved ? styles.savedButton : {}),
+                  <React.Fragment key={`${key}-${i}`}>
+                    <div style={styles.card} className="tattoo-card">
+                      <div style={styles.imageContainer}>
+                        <img
+                          src={img.thumbnail || img.url}
+                          alt="Tattoo idea"
+                          referrerPolicy="no-referrer"
+                          loading="lazy"
+                          style={styles.image}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
                           }}
-                        >
-                          {isSaving ? 'Saving...' : isSaved ? 'Saved \u2713' : '\u2601\uFE0F Save'}
-                        </button>
+                        />
+                        {/* Desktop hover overlay */}
+                        <div style={styles.overlay} className="card-overlay">
+                          <button
+                            onClick={() => handleSave(img, i)}
+                            disabled={isSaved || isSaving}
+                            style={{
+                              ...styles.saveButtonOverlay,
+                              ...(isSaved ? styles.savedButton : {}),
+                            }}
+                          >
+                            {isSaving ? 'Saving...' : isSaved ? 'Saved \u2713' : '\u2601\uFE0F Save'}
+                          </button>
+                        </div>
                       </div>
+                      {/* Mobile save button */}
+                      <button
+                        onClick={() => handleSave(img, i)}
+                        disabled={isSaved || isSaving}
+                        style={{
+                          ...styles.mobileSaveButton,
+                          ...(isSaved ? styles.savedButton : {}),
+                        }}
+                        className="mobile-save-btn"
+                      >
+                        {isSaving ? 'Saving...' : isSaved ? 'Saved \u2713' : '\uD83D\uDCBE Save to Drive'}
+                      </button>
                     </div>
-                    {/* Mobile save button */}
-                    <button
-                      onClick={() => handleSave(img, i)}
-                      disabled={isSaved || isSaving}
-                      style={{
-                        ...styles.mobileSaveButton,
-                        ...(isSaved ? styles.savedButton : {}),
-                      }}
-                      className="mobile-save-btn"
-                    >
-                      {isSaving ? 'Saving...' : isSaved ? 'Saved \u2713' : '\uD83D\uDCBE Save to Drive'}
-                    </button>
-                  </div>
+                  </React.Fragment>
                 );
               })}
             </div>
 
-            {/* Sentinel for infinite scroll — triggers 600px before visible */}
-            {hasMore && <div ref={sentinelRef} style={{ height: 1 }} />}
-
-            {/* Loading indicator */}
             {loadingMore && (
-              <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <div style={{ color: '#e91e8c', fontSize: '14px' }}>Loading more...</div>
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <div style={{ display: 'inline-block', width: 24, height: 24, border: '3px solid rgba(233,30,140,0.2)', borderTopColor: '#e91e8c', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
               </div>
             )}
           </>
@@ -342,6 +381,7 @@ export default function TattooSearchPage() {
           to { transform: translateY(0); opacity: 1; }
         }
 
+        @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes shimmer {
           0% { background-position: -200% 0; }
           100% { background-position: 200% 0; }
@@ -401,6 +441,7 @@ const styles = {
     color: '#fff',
     fontFamily: "'Inter', sans-serif",
     paddingBottom: '60px',
+    overflowX: 'clip',
   },
   toast: {
     position: 'fixed',
@@ -456,10 +497,11 @@ const styles = {
     position: 'sticky',
     top: 0,
     zIndex: 100,
-    backgroundColor: '#07071aee',
+    backgroundColor: '#07071a',
     backdropFilter: 'blur(16px)',
     WebkitBackdropFilter: 'blur(16px)',
     paddingBottom: '16px',
+    borderBottom: '1px solid rgba(255,255,255,0.06)',
   },
   categoriesWrapper: {
     padding: '12px 0 8px',
@@ -478,7 +520,9 @@ const styles = {
     flexShrink: 0,
     padding: '8px 18px',
     borderRadius: '24px',
-    border: '1px solid #ffffff20',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: '#ffffff20',
     backgroundColor: '#ffffff08',
     color: '#ccc',
     fontSize: '13px',
