@@ -108,6 +108,12 @@ const navItems = [
     sublabel: 'Cute selfies!',
   },
   {
+    href: '/saved-photos',
+    emoji: '🖼️',
+    label: 'Saved Photos',
+    sublabel: 'Booth captures',
+  },
+  {
     href: '/whisper',
     emoji: '✨',
     label: 'Whisper',

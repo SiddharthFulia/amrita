@@ -63,34 +63,36 @@ export default function PhotoBoothPage() {
   const [dragging, setDragging] = useState(null); // { type: 'sticker'|'text', index, offsetX, offsetY }
 
   const [videoDims, setVideoDims] = useState({ w: 400, h: 533 });
+  const streamRef = useRef(null);
 
   // Start camera
   useEffect(() => {
-    let stream = null;
     async function startCamera() {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
+        const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'user', width: { ideal: 600 }, height: { ideal: 800 } },
           audio: false,
         });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.onloadedmetadata = () => {
-            videoRef.current.play();
-            setCameraStatus('active');
-          };
-        }
-      } catch (err) {
-        console.error('Camera error:', err);
+        streamRef.current = stream;
+        setCameraStatus('active');
+      } catch {
         setCameraStatus('denied');
       }
     }
     startCamera();
     return () => {
-      if (stream) stream.getTracks().forEach((t) => t.stop());
+      if (streamRef.current) streamRef.current.getTracks().forEach((t) => t.stop());
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
   }, []);
+
+  // Attach stream to video element whenever it becomes available
+  useEffect(() => {
+    if (cameraStatus === 'active' && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [cameraStatus]);
 
   // Update video dimensions on resize
   useEffect(() => {
@@ -476,6 +478,21 @@ export default function PhotoBoothPage() {
     setCapturedPhotos((prev) => prev.filter((p) => p.id !== id));
   }
 
+  async function saveToDrive(photo, index) {
+    setCapturedPhotos(prev => prev.map((p, i) => i === index ? { ...p, saving: true } : p));
+    try {
+      const response = await fetch('/api/photobooth-saves', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageData: photo.dataUrl, name: `photobooth-${Date.now()}.png` }),
+      });
+      if (!response.ok) throw new Error('Save failed');
+      setCapturedPhotos(prev => prev.map((p, i) => i === index ? { ...p, saving: false, saved: true } : p));
+    } catch {
+      setCapturedPhotos(prev => prev.map((p, i) => i === index ? { ...p, saving: false } : p));
+    }
+  }
+
   const currentFilter = FILTERS.find((f) => f.id === selectedFilter)?.css || 'none';
 
   // Permission request / denied UI
@@ -627,8 +644,16 @@ export default function PhotoBoothPage() {
               <div key={photo.id} style={styles.stripItem}>
                 <img src={photo.dataUrl} alt={`Capture ${i + 1}`} style={styles.stripImg} />
                 <div style={styles.stripActions}>
-                  <button style={styles.stripBtn} onClick={() => downloadPhoto(photo.dataUrl, i)} title="Save">
+                  <button style={styles.stripBtn} onClick={() => downloadPhoto(photo.dataUrl, i)} title="Save to device">
                     💾
+                  </button>
+                  <button
+                    style={{ ...styles.stripBtn, background: photo.saved ? 'rgba(76,175,80,0.3)' : undefined }}
+                    onClick={() => saveToDrive(photo, i)}
+                    disabled={photo.saving || photo.saved}
+                    title="Save to Drive"
+                  >
+                    {photo.saving ? '⏳' : photo.saved ? '✓' : '☁️'}
                   </button>
                   <button style={styles.stripBtn} onClick={() => deletePhoto(photo.id)} title="Delete">
                     🗑️
