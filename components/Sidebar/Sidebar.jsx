@@ -90,6 +90,24 @@ const navItems = [
     sublabel: 'Her photos ♥',
   },
   {
+    href: '/voice',
+    emoji: '🎤',
+    label: 'Voice Fun',
+    sublabel: 'Change your voice!',
+  },
+  {
+    href: '/karaoke',
+    emoji: '🎶',
+    label: 'Karaoke',
+    sublabel: 'Sing along!',
+  },
+  {
+    href: '/photobooth',
+    emoji: '📷',
+    label: 'Photo Booth',
+    sublabel: 'Cute selfies!',
+  },
+  {
     href: '/whisper',
     emoji: '✨',
     label: 'Whisper',
