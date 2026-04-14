@@ -349,11 +349,22 @@ export default function KaraokePage() {
     setScore(null);
     setShowConfetti(false);
     setPlayingBack(false);
+    setMatchedWords(new Set());
+    setCurrentWordIdx(0);
     pausedAtRef.current = 0;
     micActiveRef.current = 0;
     setMicActiveTime(0);
     chunksRef.current = [];
-  }, []);
+    stopSpeechRecognition();
+
+    const words = [];
+    song.lines.forEach((line, lineIdx) => {
+      line.text.split(/\s+/).forEach(word => {
+        words.push({ word, lineIdx });
+      });
+    });
+    allWordsRef.current = words;
+  };
 
   /* ---- tick ---- */
   useEffect(() => {
@@ -365,11 +376,13 @@ export default function KaraokePage() {
       const elapsed = (Date.now() - startTsRef.current) / 1000;
       setCurrentTime(elapsed);
 
-      /* find current line */
-      const idx = selectedSong.lines.findIndex(
-        (l) => elapsed >= l.startTime && elapsed < l.endTime
-      );
-      setCurrentLineIdx(idx);
+      /* find current line — only in auto mode, sing mode uses speech recognition */
+      if (!singMode) {
+        const idx = selectedSong.lines.findIndex(
+          (l) => elapsed >= l.startTime && elapsed < l.endTime
+        );
+        setCurrentLineIdx(idx);
+      }
 
       /* track mic active time */
       if (micOn) {
@@ -415,11 +428,13 @@ export default function KaraokePage() {
       clearInterval(timerRef.current);
       timerRef.current = null;
       setIsPlaying(false);
+      stopSpeechRecognition();
       if (mediaRecRef.current && mediaRecRef.current.state === 'recording') {
         mediaRecRef.current.pause();
       }
     } else {
       setIsPlaying(true);
+      if (singMode) startSpeechRecognition();
       if (mediaRecRef.current && mediaRecRef.current.state === 'paused') {
         mediaRecRef.current.resume();
       }
@@ -429,6 +444,7 @@ export default function KaraokePage() {
   /* ---- restart ---- */
   const restart = () => {
     stopAll();
+    stopSpeechRecognition();
     setCurrentTime(0);
     setCurrentLineIdx(-1);
     setSongDone(false);
@@ -436,6 +452,8 @@ export default function KaraokePage() {
     setScore(null);
     setShowConfetti(false);
     setPlayingBack(false);
+    setMatchedWords(new Set());
+    setCurrentWordIdx(0);
     pausedAtRef.current = 0;
     micActiveRef.current = 0;
     setMicActiveTime(0);
@@ -899,7 +917,25 @@ export default function KaraokePage() {
                               }),
                         }}
                       >
-                        {line.text}
+                        {singMode ? (
+                          line.text.split(/\s+/).map((word, wordIdx) => {
+                            const globalIdx = allWordsRef.current.findIndex(
+                              (w, idx) => w.lineIdx === i && w.word === word &&
+                              allWordsRef.current.slice(0, idx).filter(ww => ww.lineIdx === i).length === wordIdx
+                            );
+                            const isMatched = matchedWords.has(globalIdx);
+                            return (
+                              <span key={wordIdx} style={{
+                                color: isMatched ? '#4caf50' : undefined,
+                                textShadow: isMatched ? '0 0 10px rgba(76,175,80,0.6)' : undefined,
+                                fontWeight: isMatched ? 800 : undefined,
+                                transition: 'all 0.3s',
+                              }}>
+                                {word}{' '}
+                              </span>
+                            );
+                          })
+                        ) : line.text}
                       </div>
                     );
                   })}
@@ -1181,6 +1217,36 @@ export default function KaraokePage() {
               >
                 {micOn ? 'Mic is ON — singing is being recorded' : 'Mic is OFF'}
               </p>
+
+              {/* Sing Mode toggle */}
+              <button
+                onClick={() => {
+                  const newMode = !singMode;
+                  setSingMode(newMode);
+                  if (newMode && isPlaying) {
+                    startSpeechRecognition();
+                  } else {
+                    stopSpeechRecognition();
+                  }
+                  setMatchedWords(new Set());
+                  setCurrentWordIdx(0);
+                }}
+                style={{
+                  marginTop: '10px',
+                  padding: '8px 20px',
+                  borderRadius: '20px',
+                  border: singMode ? '1.5px solid #4caf50' : '1px solid rgba(255,255,255,0.15)',
+                  background: singMode ? 'rgba(76,175,80,0.15)' : 'rgba(255,255,255,0.05)',
+                  color: singMode ? '#4caf50' : 'rgba(255,255,255,0.5)',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: "'Inter', sans-serif",
+                  transition: 'all 0.2s',
+                }}
+              >
+                {singMode ? '🎙️ Sing Mode ON — lyrics follow your voice' : '⏱️ Auto Scroll — switch to Sing Mode'}
+              </button>
             </div>
           )}
         </div>
