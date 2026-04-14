@@ -114,6 +114,12 @@ const navItems = [
     sublabel: 'Booth captures',
   },
   {
+    href: '/facefilters',
+    emoji: '🎭',
+    label: 'Face Filters',
+    sublabel: 'Snapchat style!',
+  },
+  {
     href: '/whisper',
     emoji: '✨',
     label: 'Whisper',

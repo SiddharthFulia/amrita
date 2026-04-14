@@ -363,28 +363,26 @@ export default function PhotoBoothPage() {
     [stickers, textOverlays]
   );
 
-  const handlePointerMove = useCallback(
-    (e) => {
-      if (!dragging) return;
-      e.preventDefault();
-      const rect = containerRef.current.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      const newX = Math.max(0, Math.min(rect.width, clientX - rect.left - dragging.offsetX));
-      const newY = Math.max(0, Math.min(rect.height, clientY - rect.top - dragging.offsetY));
+  const handlePointerMove = (e) => {
+    if (!dragging) return;
+    e.preventDefault();
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
+    const newX = Math.max(-20, Math.min(rect.width + 20, clientX - rect.left - dragging.offsetX));
+    const newY = Math.max(-20, Math.min(rect.height + 20, clientY - rect.top - dragging.offsetY));
 
-      if (dragging.type === 'sticker') {
-        setStickers((prev) => prev.map((s, i) => (i === dragging.index ? { ...s, x: newX, y: newY } : s)));
-      } else {
-        setTextOverlays((prev) => prev.map((t, i) => (i === dragging.index ? { ...t, x: newX, y: newY } : t)));
-      }
-    },
-    [dragging]
-  );
+    if (dragging.type === 'sticker') {
+      setStickers((prev) => prev.map((s, i) => (i === dragging.index ? { ...s, x: newX, y: newY } : s)));
+    } else {
+      setTextOverlays((prev) => prev.map((t, i) => (i === dragging.index ? { ...t, x: newX, y: newY } : t)));
+    }
+  };
 
-  const handlePointerUp = useCallback(() => {
+  const handlePointerUp = () => {
     setDragging(null);
-  }, []);
+  };
 
   useEffect(() => {
     if (dragging) {
@@ -783,7 +781,7 @@ export default function PhotoBoothPage() {
                     style={styles.select}
                   >
                     {FONTS.map((f) => (
-                      <option key={f} value={f}>{f.split(',')[0]}</option>
+                      <option key={f} value={f} style={{ background: '#1a1a2e', color: '#fff' }}>{f.split(',')[0]}</option>
                     ))}
                   </select>
 
@@ -1099,10 +1097,10 @@ const styles = {
     fontWeight: 600,
   },
   select: {
-    padding: '4px 8px',
-    borderRadius: 6,
+    padding: '6px 10px',
+    borderRadius: 8,
     border: '1px solid rgba(179, 136, 255, 0.3)',
-    background: 'rgba(255,255,255,0.06)',
+    background: '#1a1a2e',
     color: '#fff',
     fontSize: 12,
     fontFamily: '"Inter", sans-serif',
