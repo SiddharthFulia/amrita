@@ -149,20 +149,19 @@ export default function FaceAIPage() {
             fpsCounter.current.lastTime = now;
           }
 
-          if (res && res.faces && res.faces.length > 0) {
-            setFaceData(res);
+          const analysisData = res?.data || res;
+          if (analysisData?.faces && analysisData.faces.length > 0) {
+            setFaceData(analysisData);
             setNoFace(false);
-            const mood = res.faces[0].mood;
-            if (mood) {
+            const firstFace = analysisData.faces[0];
+            if (firstFace.mood) {
               setMoodHistory((prev) => {
-                const next = [...prev, { mood: mood.label, confidence: mood.confidence }];
+                const next = [...prev, { mood: firstFace.mood, confidence: firstFace.moodConfidence || 0 }];
                 return next.slice(-10);
               });
             }
-          } else if (res && res.face_count === 0) {
-            setFaceData(res);
-            setNoFace(true);
           } else {
+            setFaceData(analysisData);
             setNoFace(true);
           }
         })
@@ -200,21 +199,23 @@ export default function FaceAIPage() {
     const mapY = (y) => y * scaleY;
 
     faceData.faces.forEach((face) => {
+      const bbox = face.boundingBox || face.bbox;
+
       // Bounding box
-      if (showBoundingBox && face.bbox) {
-        const { x, y, width: bw, height: bh } = face.bbox;
+      if (showBoundingBox && bbox) {
         ctx.strokeStyle = '#e91e8c';
         ctx.lineWidth = 1.5;
         ctx.setLineDash([6, 4]);
-        const bx = mirrorX(x + bw);
-        const by = mapY(y);
-        ctx.strokeRect(bx, by, bw * scaleX, bh * scaleY);
+        const bx = mirrorX(bbox.x + bbox.width);
+        const by = mapY(bbox.y);
+        ctx.strokeRect(bx, by, bbox.width * scaleX, bbox.height * scaleY);
         ctx.setLineDash([]);
       }
 
-      // Landmarks
-      if (showLandmarks && face.landmarks && face.landmarks.length === 68) {
-        const pts = face.landmarks.map(([lx, ly]) => [mirrorX(lx), mapY(ly)]);
+      // Landmarks — BE returns { points: [{x,y}], groups: {} }
+      const landmarkPoints = face.landmarks?.points;
+      if (showLandmarks && landmarkPoints && landmarkPoints.length === 68) {
+        const pts = landmarkPoints.map((point) => [mirrorX(point.x), mapY(point.y)]);
 
         // Draw connecting lines
         Object.values(LANDMARK_GROUPS).forEach((group) => {
@@ -238,15 +239,16 @@ export default function FaceAIPage() {
         });
       }
 
-      // Mood emoji floating above face
-      if (face.mood && face.bbox) {
+      // Mood emoji floating above face — face.mood is a string like "happy"
+      const moodLabel = typeof face.mood === 'string' ? face.mood : face.mood?.label;
+      if (moodLabel && bbox) {
         bounceFrame.current = (bounceFrame.current + 1) % 60;
         const bounceY = Math.sin((bounceFrame.current / 60) * Math.PI * 2) * 4;
-        const cx = mirrorX(face.bbox.x + face.bbox.width / 2);
-        const cy = mapY(face.bbox.y) - 20 + bounceY;
+        const cx = mirrorX(bbox.x + bbox.width / 2);
+        const cy = mapY(bbox.y) - 20 + bounceY;
         ctx.font = '40px serif';
         ctx.textAlign = 'center';
-        ctx.fillText(MOOD_EMOJIS[face.mood.label] || '😐', cx, cy);
+        ctx.fillText(MOOD_EMOJIS[moodLabel] || '😐', cx, cy);
       }
     });
   }, [faceData, showLandmarks, showBoundingBox]);
@@ -277,11 +279,12 @@ export default function FaceAIPage() {
   }, []);
 
   const face = faceData?.faces?.[0];
-  const confidence = face?.confidence ?? 0;
-  const mood = face?.mood;
+  const confidence = Math.round((face?.confidence ?? 0) * 100);
+  const moodLabel = typeof face?.mood === 'string' ? face.mood : face?.mood?.label || '';
+  const moodConfidence = Math.round((face?.moodConfidence ?? 0) * 100);
   const features = face?.features;
-  const faceAngle = face?.angle ?? 0;
-  const faceCount = faceData?.face_count ?? 0;
+  const faceAngle = face?.faceAngle ?? face?.angle ?? 0;
+  const faceCount = faceData?.faceCount ?? faceData?.face_count ?? 0;
 
   const confColor = confidence > 90 ? '#4caf50' : confidence > 70 ? '#ffc107' : '#f44336';
 
@@ -438,19 +441,7 @@ export default function FaceAIPage() {
                   OpenCV Service Offline
                 </div>
                 <div style={{ fontSize: '12px', color: '#999', lineHeight: 1.6 }}>
-                  The Python face analysis service needs to be running on your VPS.
-                  Start it with:<br />
-                  <code style={{
-                    display: 'inline-block',
-                    marginTop: '8px',
-                    background: '#1a1a3e',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                    color: '#b388ff',
-                  }}>
-                    python face_service.py
-                  </code>
+                  Ask Sid to fix me 🛠️
                 </div>
               </div>
             )}
@@ -537,19 +528,19 @@ export default function FaceAIPage() {
           <GlassCard title="Mood">
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
               <span style={{ fontSize: '36px' }}>
-                {mood ? (MOOD_EMOJIS[mood.label] || '😐') : '—'}
+                {moodLabel ? (MOOD_EMOJIS[moodLabel] || '😐') : '—'}
               </span>
               <div>
                 <div style={{
                   fontSize: '16px',
                   fontWeight: 600,
-                  color: mood ? (MOOD_COLORS[mood.label] || '#fff') : '#555',
+                  color: moodLabel ? (MOOD_COLORS[moodLabel] || '#fff') : '#555',
                   textTransform: 'capitalize',
                 }}>
-                  {mood?.label || 'Unknown'}
+                  {moodLabel || 'Unknown'}
                 </div>
                 <div style={{ fontSize: '12px', color: '#888' }}>
-                  {mood ? `${Math.round(mood.confidence)}% confident` : 'Waiting...'}
+                  {moodLabel ? `${moodConfidence}% confident` : 'Waiting...'}
                 </div>
               </div>
             </div>
@@ -561,10 +552,10 @@ export default function FaceAIPage() {
               {moodHistory.map((m, i) => (
                 <div
                   key={i}
-                  title={`${m.mood} (${Math.round(m.confidence)}%)`}
+                  title={`${m.mood} (${Math.round(m.confidence * 100)}%)`}
                   style={{
                     flex: 1,
-                    height: `${Math.max(10, m.confidence)}%`,
+                    height: `${Math.max(10, m.confidence * 100)}%`,
                     background: MOOD_COLORS[m.mood] || '#666',
                     borderRadius: '2px 2px 0 0',
                     transition: 'height 0.3s ease',
@@ -612,9 +603,9 @@ export default function FaceAIPage() {
 
           {/* Features */}
           <GlassCard title="Features">
-            <FeatureBar label="Mouth Open" value={features?.mouth_open ?? 0} color="#e91e8c" />
-            <FeatureBar label="Left Eye" value={features?.left_eye ?? 0} color="#4caf50" />
-            <FeatureBar label="Right Eye" value={features?.right_eye ?? 0} color="#4caf50" />
+            <FeatureBar label="Mouth Open" value={features?.mouthOpen ?? features?.mouth_open ?? 0} color="#e91e8c" />
+            <FeatureBar label="Left Eye" value={features?.leftEyeOpen ?? features?.left_eye ?? 0} color="#4caf50" />
+            <FeatureBar label="Right Eye" value={features?.rightEyeOpen ?? features?.right_eye ?? 0} color="#4caf50" />
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -693,7 +684,8 @@ function GlassCard({ title, children, style = {} }) {
 }
 
 function FeatureBar({ label, value, color }) {
-  const pct = Math.min(100, Math.max(0, Math.round(value)));
+  const rawValue = value <= 1 ? value * 100 : value;
+  const pct = Math.min(100, Math.max(0, Math.round(rawValue)));
   return (
     <div style={{ marginBottom: '8px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '3px' }}>
