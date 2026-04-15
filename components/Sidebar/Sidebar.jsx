@@ -126,6 +126,12 @@ const navItems = [
     sublabel: 'OpenCV analysis',
   },
   {
+    href: '/objectdetect',
+    emoji: '🔍',
+    label: 'Object Detect',
+    sublabel: 'AI vision',
+  },
+  {
     href: '/whisper',
     emoji: '✨',
     label: 'Whisper',
