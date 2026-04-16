@@ -76,12 +76,12 @@ export default function LEDPage() {
 
   const keyframesStyle = `
     @keyframes scrollH {
-      0% { transform: translateX(100%); }
-      100% { transform: translateX(-100%); }
+      0% { transform: translateY(-50%) translateX(100vw); }
+      100% { transform: translateY(-50%) translateX(-200%); }
     }
     @keyframes scrollV {
-      0% { transform: translateY(100vh); }
-      100% { transform: translateY(-100%); }
+      0% { transform: translateY(-50%) rotate(-90deg) translateX(100vh); }
+      100% { transform: translateY(-50%) rotate(-90deg) translateX(-200%); }
     }
     @keyframes flickerAnim {
       0%, 100% { opacity: 1; }
@@ -202,8 +202,8 @@ export default function LEDPage() {
 
         {/* Scrolling Text */}
         <div style={{
-          whiteSpace: isMobile ? 'normal' : 'nowrap',
-          fontSize: `clamp(3rem, ${fontSize}vw, 12rem)`,
+          whiteSpace: 'nowrap',
+          fontSize: isMobile ? `clamp(2rem, ${fontSize * 0.7}vw, 8rem)` : `clamp(3rem, ${fontSize}vw, 12rem)`,
           fontFamily: currentFont.value,
           letterSpacing: currentFont.letterSpacing,
           fontWeight: fontIndex === 2 ? '900' : '700',
@@ -212,22 +212,10 @@ export default function LEDPage() {
           animation: buildTextAnimation(),
           position: 'absolute',
           zIndex: 2,
-          ...(isMobile
-            ? {
-                writingMode: 'horizontal-tb',
-                textAlign: 'center',
-                width: '90%',
-                left: '5%',
-                padding: '20px 0',
-                wordBreak: 'break-word',
-              }
-            : {
-                top: '50%',
-                transform: 'translateY(-50%)',
-                paddingLeft: '20px',
-                paddingRight: '20px',
-              }
-          ),
+          top: '50%',
+          transformOrigin: 'center center',
+          paddingLeft: '20px',
+          paddingRight: '20px',
         }}>
           {displayText}
         </div>
