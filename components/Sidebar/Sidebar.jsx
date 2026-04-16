@@ -132,6 +132,12 @@ const navItems = [
     sublabel: 'AI vision',
   },
   {
+    href: '/led',
+    emoji: '💡',
+    label: 'LED Message',
+    sublabel: 'Scrolling sign',
+  },
+  {
     href: '/whisper',
     emoji: '✨',
     label: 'Whisper',
