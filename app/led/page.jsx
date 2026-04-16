@@ -80,8 +80,8 @@ export default function LEDPage() {
       100% { transform: translateY(-50%) translateX(-200%); }
     }
     @keyframes scrollV {
-      0% { transform: translateY(-50%) rotate(-90deg) translateX(100vh); }
-      100% { transform: translateY(-50%) rotate(-90deg) translateX(-200%); }
+      0% { transform: translateY(-50%) rotate(90deg) translateX(100vh); }
+      100% { transform: translateY(-50%) rotate(90deg) translateX(-200%); }
     }
     @keyframes flickerAnim {
       0%, 100% { opacity: 1; }
@@ -203,7 +203,7 @@ export default function LEDPage() {
         {/* Scrolling Text */}
         <div style={{
           whiteSpace: 'nowrap',
-          fontSize: isMobile ? `clamp(2rem, ${fontSize * 0.7}vw, 8rem)` : `clamp(3rem, ${fontSize}vw, 12rem)`,
+          fontSize: isMobile ? `clamp(3rem, ${fontSize}vh, 15vh)` : `clamp(3rem, ${fontSize}vw, 12rem)`,
           fontFamily: currentFont.value,
           letterSpacing: currentFont.letterSpacing,
           fontWeight: fontIndex === 2 ? '900' : '700',
