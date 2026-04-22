@@ -1,15 +1,15 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { checkHealth, sendAI } from '@/utils/apis';
-import { AI_MODELS, getModelInfo } from '@/constants/models';
+import { checkHealth, sendAI, sendGroq } from '@/utils/apis';
+import { GROQ_MODELS, OLLAMA_MODELS, getModelInfo, isGroqModel } from '@/constants/models';
 
 export default function AIPage() {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('checking');
-  const [selectedModel, setSelectedModel] = useState('gemma2:2b');
+  const [selectedModel, setSelectedModel] = useState('llama-3.1-8b');
   const [systemPrompt, setSystemPrompt] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [temperature, setTemperature] = useState(0.7);
@@ -59,13 +59,21 @@ export default function AIPage() {
       }));
 
       const startTime = Date.now();
-      const aiResponse = await sendAI(trimmedMessage, {
-        history: chatHistory,
-        model: selectedModel,
-        system: systemPrompt || undefined,
-        maxTokens,
-        temperature,
-      });
+      const aiResponse = isGroqModel(selectedModel)
+        ? await sendGroq(trimmedMessage, {
+            history: chatHistory,
+            model: selectedModel,
+            system: systemPrompt || undefined,
+            maxTokens,
+            temperature,
+          })
+        : await sendAI(trimmedMessage, {
+            history: chatHistory,
+            model: selectedModel,
+            system: systemPrompt || undefined,
+            maxTokens,
+            temperature,
+          });
       setLastResponseTime(Date.now() - startTime);
       setLastTokenCount(aiResponse.data?.tokens || null);
 
@@ -155,11 +163,20 @@ export default function AIPage() {
             paddingRight: '28px',
           }}
         >
-          {AI_MODELS.map(modelOption => (
-            <option key={modelOption.id} value={modelOption.id} style={{ background: '#1a1a2e', color: '#fff' }}>
-              {modelOption.emoji} {modelOption.label} ({modelOption.badge})
-            </option>
-          ))}
+          <optgroup label="⚡ Fast (Groq Cloud)" style={{ background: '#1a1a2e', color: '#4caf50', fontWeight: 700 }}>
+            {GROQ_MODELS.map(modelOption => (
+              <option key={modelOption.id} value={modelOption.id} style={{ background: '#1a1a2e', color: '#fff' }}>
+                {modelOption.emoji} {modelOption.label} ({modelOption.speed})
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label="🖥️ Local (Ollama VPS)" style={{ background: '#1a1a2e', color: '#ff9800', fontWeight: 700 }}>
+            {OLLAMA_MODELS.map(modelOption => (
+              <option key={modelOption.id} value={modelOption.id} style={{ background: '#1a1a2e', color: '#fff' }}>
+                {modelOption.emoji} {modelOption.label} ({modelOption.speed})
+              </option>
+            ))}
+          </optgroup>
         </select>
 
         <button onClick={() => setShowSettings(!showSettings)} style={{

@@ -28,8 +28,23 @@ export async function generateMemoryGlitch(difficulty = 'easy') {
   return post(ENDPOINTS.MEMORY_GLITCH, { difficulty }, { timeout: 30000 });
 }
 
+export async function sendGroq(message, options = {}) {
+  return post(ENDPOINTS.GROQ, {
+    message,
+    history: options.history || [],
+    model: options.model || 'llama-3.1-8b',
+    system: options.system || undefined,
+    maxTokens: options.maxTokens || 500,
+    temperature: options.temperature || 0.7,
+  });
+}
+
 export async function analyzeFace(imageData) {
   return post(ENDPOINTS.FACE_ANALYZE, { image: imageData }, { timeout: 10000 });
+}
+
+export async function detectObjects(imageData, threshold = 0.5) {
+  return post(ENDPOINTS.DETECT_OBJECTS, { image: imageData, threshold }, { timeout: 10000 });
 }
 
 export async function checkFaceHealth() {
