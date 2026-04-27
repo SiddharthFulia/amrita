@@ -174,6 +174,12 @@ const navItems = [
     sublabel: 'Growth & glow',
   },
   {
+    href: '/stupid-design',
+    emoji: '🧪',
+    label: 'Stupid Design',
+    sublabel: 'Cursed UI lab',
+  },
+  {
     href: '/surprise',
     emoji: '🎁',
     label: '12 May Surprise',
