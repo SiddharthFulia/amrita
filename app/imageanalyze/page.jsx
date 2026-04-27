@@ -135,12 +135,15 @@ export default function ImageAnalyzePage() {
     setResult('');
     try {
       const res = await analyzeImage(imageBase64, prompt || DEFAULT_PROMPT);
-      if (res?.result) {
-        setResult(res.result);
-      } else if (res?.text) {
-        setResult(res.text);
-      } else if (typeof res === 'string') {
-        setResult(res);
+      const data = res?.data || res;
+      if (data?.reply) {
+        setResult(data.reply);
+      } else if (data?.result) {
+        setResult(data.result);
+      } else if (data?.text) {
+        setResult(data.text);
+      } else if (typeof data === 'string') {
+        setResult(data);
       } else {
         setError('No analysis returned. Try again.');
       }
@@ -640,9 +643,11 @@ export default function ImageAnalyzePage() {
                           setResult('');
                           analyzeImage(imageBase64, qp)
                             .then((res) => {
-                              if (res?.result) setResult(res.result);
-                              else if (res?.text) setResult(res.text);
-                              else if (typeof res === 'string') setResult(res);
+                              const data = res?.data || res;
+                              if (data?.reply) setResult(data.reply);
+                              else if (data?.result) setResult(data.result);
+                              else if (data?.text) setResult(data.text);
+                              else if (typeof data === 'string') setResult(data);
                               else setError('No analysis returned.');
                             })
                             .catch(() => setError('Analysis failed.'))

@@ -98,14 +98,16 @@ export default function TTSPage() {
 
     try {
       const res = await textToSpeech(text.trim(), voice, lang);
-      if (res.error) {
-        setError(res.error);
+      const responseData = res.data || res;
+
+      if (res.error || responseData.error) {
+        setError(res.error || responseData.error);
         setLoading(false);
         return;
       }
 
-      const audioData = res.audio || res.audioContent || res.data;
-      if (!audioData) {
+      const audioData = responseData.audio || responseData.audioContent;
+      if (!audioData || typeof audioData !== 'string') {
         setError('No audio data received');
         setLoading(false);
         return;
@@ -114,8 +116,8 @@ export default function TTSPage() {
       const src = audioData.startsWith('data:') ? audioData : `data:audio/mp3;base64,${audioData}`;
       setAudioSrc(src);
 
-      if (res.charsUsed !== undefined) setCharsUsed(res.charsUsed);
-      if (res.usage?.charsUsed !== undefined) setCharsUsed(res.usage.charsUsed);
+      if (responseData.dailyUsed !== undefined) setCharsUsed(responseData.dailyUsed);
+      if (responseData.chars !== undefined) setCharsUsed(prev => prev + responseData.chars);
 
       const newEntry = { text: text.trim(), src, voice, timestamp: Date.now() };
       setHistory(prev => [newEntry, ...prev].slice(0, 5));

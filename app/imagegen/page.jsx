@@ -34,17 +34,18 @@ export default function ImageGenPage() {
     setImage(null);
     try {
       const res = await generateAIImage(p.trim(), 'flux');
-      if (res?.image) {
-        const imgSrc = res.image.startsWith('data:') ? res.image : `data:image/png;base64,${res.image}`;
+      const data = res?.data || res;
+      if (data?.image) {
+        const imgSrc = data.image.startsWith('data:') ? data.image : `data:image/png;base64,${data.image}`;
         setImage(imgSrc);
         setHistory(prev => {
           const next = [{ src: imgSrc, prompt: p.trim(), id: Date.now() }, ...prev];
           return next.slice(0, 10);
         });
-      } else if (res?.url) {
-        setImage(res.url);
+      } else if (data?.url) {
+        setImage(data.url);
         setHistory(prev => {
-          const next = [{ src: res.url, prompt: p.trim(), id: Date.now() }, ...prev];
+          const next = [{ src: data.url, prompt: p.trim(), id: Date.now() }, ...prev];
           return next.slice(0, 10);
         });
       } else {
