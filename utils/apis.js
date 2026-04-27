@@ -20,14 +20,6 @@ export async function sendAI(message, options = {}) {
   });
 }
 
-export async function fetchStats() {
-  return get(ENDPOINTS.STATS, {}, { timeout: 5000 });
-}
-
-export async function generateMemoryGlitch(difficulty = 'easy') {
-  return post(ENDPOINTS.MEMORY_GLITCH, { difficulty }, { timeout: 30000 });
-}
-
 export async function sendGroq(message, options = {}) {
   return post(ENDPOINTS.GROQ, {
     message,
@@ -37,6 +29,41 @@ export async function sendGroq(message, options = {}) {
     maxTokens: options.maxTokens || 500,
     temperature: options.temperature || 0.7,
   });
+}
+
+export async function sendGemini(message, options = {}) {
+  return post(ENDPOINTS.GEMINI, {
+    message,
+    history: options.history || [],
+    model: options.model || 'gemini-flash',
+    system: options.system || undefined,
+    maxTokens: options.maxTokens || 500,
+    temperature: options.temperature || 0.7,
+  });
+}
+
+export async function analyzeImage(imageBase64, prompt = 'Describe this image in detail.', model = 'gemini-flash') {
+  return post(ENDPOINTS.ANALYZE_IMAGE, { image: imageBase64, prompt, model }, { timeout: 15000 });
+}
+
+export async function generateAIImage(prompt, model) {
+  return post(ENDPOINTS.IMAGE_GEN, { prompt, model }, { timeout: 60000 });
+}
+
+export async function textToSpeech(text, voice = 'en-US-Standard-D', lang = 'en-US') {
+  return post(ENDPOINTS.TTS, { text, voice, lang });
+}
+
+export async function summarizeText(text, model) {
+  return post(ENDPOINTS.SUMMARIZE, { text, model });
+}
+
+export async function fetchStats() {
+  return get(ENDPOINTS.STATS, {}, { timeout: 5000 });
+}
+
+export async function generateMemoryGlitch(difficulty = 'easy') {
+  return post(ENDPOINTS.MEMORY_GLITCH, { difficulty }, { timeout: 30000 });
 }
 
 export async function analyzeFace(imageData) {

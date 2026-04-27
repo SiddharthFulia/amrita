@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { checkHealth, sendWhisper, sendGroq, fetchStats } from '@/utils/apis';
-import { GROQ_MODELS, OLLAMA_MODELS, getModelInfo, isGroqModel } from '@/constants/models';
+import { checkHealth, sendWhisper, sendGroq, sendGemini, fetchStats } from '@/utils/apis';
+import { GROQ_MODELS, GEMINI_MODELS, OLLAMA_MODELS, getModelInfo, isGroqModel, isGeminiModel } from '@/constants/models';
 
 function formatUptime(seconds) {
   const days = Math.floor(seconds / 86400);
@@ -106,9 +106,12 @@ export default function WhisperPage() {
         from: message.from === 'ai' ? 'them' : 'me',
         text: message.text,
       }));
+      const whisperSystem = "You're Whisper, a sweet AI on Siddharth's website for his girlfriend Amrita. Be warm, helpful, concise. Use emoji sometimes. Keep replies short (1-3 sentences). If she's upset with Siddharth, listen but gently remind her he cares. Never bash him. Hype their love.";
       const chatResponse = isGroqModel(aiMode)
-        ? await sendGroq(trimmedMessage, { history: chatHistory, model: aiMode, system: "You're Whisper, a sweet AI on Siddharth's website for his girlfriend Amrita. Be warm, helpful, concise. Use emoji sometimes. Keep replies short (1-3 sentences). If she's upset with Siddharth, listen but gently remind her he cares. Never bash him. Hype their love." })
-        : await sendWhisper(trimmedMessage, chatHistory, aiMode, 'general');
+        ? await sendGroq(trimmedMessage, { history: chatHistory, model: aiMode, system: whisperSystem })
+        : isGeminiModel(aiMode)
+          ? await sendGemini(trimmedMessage, { history: chatHistory, model: aiMode, system: whisperSystem })
+          : await sendWhisper(trimmedMessage, chatHistory, aiMode, 'general');
       const replyText = chatResponse.data?.reply || chatResponse.reply || "Hmm, I'm not sure what to say...";
       setAiSource(chatResponse.data?.source || '');
       setMessages(previousMessages => [...previousMessages, {
@@ -204,6 +207,13 @@ export default function WhisperPage() {
         >
           <optgroup label="⚡ Fast (Groq Cloud)" style={{ background: '#1a1a2e', color: '#4caf50', fontWeight: 700 }}>
             {GROQ_MODELS.map(modelOption => (
+              <option key={modelOption.id} value={modelOption.id} style={{ background: '#1a1a2e', color: '#fff' }}>
+                {modelOption.emoji} {modelOption.label} ({modelOption.speed})
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label="✨ Google (Gemini)" style={{ background: '#1a1a2e', color: '#4285f4', fontWeight: 700 }}>
+            {GEMINI_MODELS.map(modelOption => (
               <option key={modelOption.id} value={modelOption.id} style={{ background: '#1a1a2e', color: '#fff' }}>
                 {modelOption.emoji} {modelOption.label} ({modelOption.speed})
               </option>

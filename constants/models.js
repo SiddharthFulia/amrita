@@ -4,6 +4,12 @@ export const GROQ_MODELS = [
   { id: 'gpt-oss-120b', label: 'GPT-OSS 120B', emoji: '👑', speed: '~2-3s', badge: 'Powerful', badgeColor: '#ffd54f', desc: 'Groq cloud — most capable', provider: 'groq' },
 ];
 
+export const GEMINI_MODELS = [
+  { id: 'gemini-flash', label: 'Gemini Flash', emoji: '✨', speed: '~1s', badge: 'Fast', badgeColor: '#4285f4', desc: 'Google — fast & smart', provider: 'gemini' },
+  { id: 'gemini-pro', label: 'Gemini Pro', emoji: '💫', speed: '~2-3s', badge: 'Best', badgeColor: '#ea4335', desc: 'Google — highest quality', provider: 'gemini' },
+  { id: 'gemini-flash-lite', label: 'Gemini Lite', emoji: '💨', speed: '<1s', badge: 'Lite', badgeColor: '#34a853', desc: 'Google — lightweight', provider: 'gemini' },
+];
+
 export const OLLAMA_MODELS = [
   { id: 'gemma2:2b', label: 'Gemma 2 2B', emoji: '💎', speed: '~2-3s', badge: 'Fastest', badgeColor: '#ff9800', desc: 'Local — fast & balanced', provider: 'ollama' },
   { id: 'llama3.2:1b', label: 'Llama 3.2 1B', emoji: '🦙', speed: '~2-3s', badge: 'Light', badgeColor: '#78909c', desc: 'Local — quick replies', provider: 'ollama' },
@@ -12,7 +18,7 @@ export const OLLAMA_MODELS = [
   { id: 'llama3.2:3b', label: 'Llama 3.2 3B', emoji: '🦙', speed: '~5-6s', badge: 'Best Local', badgeColor: '#e91e8c', desc: 'Local — highest quality', provider: 'ollama' },
 ];
 
-export const AI_MODELS = [...GROQ_MODELS, ...OLLAMA_MODELS];
+export const AI_MODELS = [...GROQ_MODELS, ...GEMINI_MODELS, ...OLLAMA_MODELS];
 
 export function getModelInfo(modelId) {
   return AI_MODELS.find(model => model.id === modelId) || AI_MODELS[0];
@@ -20,4 +26,8 @@ export function getModelInfo(modelId) {
 
 export function isGroqModel(modelId) {
   return GROQ_MODELS.some(model => model.id === modelId);
+}
+
+export function isGeminiModel(modelId) {
+  return GEMINI_MODELS.some(model => model.id === modelId);
 }

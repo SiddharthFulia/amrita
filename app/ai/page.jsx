@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { checkHealth, sendAI, sendGroq } from '@/utils/apis';
-import { GROQ_MODELS, OLLAMA_MODELS, getModelInfo, isGroqModel } from '@/constants/models';
+import { checkHealth, sendAI, sendGroq, sendGemini } from '@/utils/apis';
+import { GROQ_MODELS, GEMINI_MODELS, OLLAMA_MODELS, getModelInfo, isGroqModel, isGeminiModel } from '@/constants/models';
 
 export default function AIPage() {
   const [messages, setMessages] = useState([]);
@@ -59,21 +59,12 @@ export default function AIPage() {
       }));
 
       const startTime = Date.now();
+      const aiOptions = { history: chatHistory, model: selectedModel, system: systemPrompt || undefined, maxTokens, temperature };
       const aiResponse = isGroqModel(selectedModel)
-        ? await sendGroq(trimmedMessage, {
-            history: chatHistory,
-            model: selectedModel,
-            system: systemPrompt || undefined,
-            maxTokens,
-            temperature,
-          })
-        : await sendAI(trimmedMessage, {
-            history: chatHistory,
-            model: selectedModel,
-            system: systemPrompt || undefined,
-            maxTokens,
-            temperature,
-          });
+        ? await sendGroq(trimmedMessage, aiOptions)
+        : isGeminiModel(selectedModel)
+          ? await sendGemini(trimmedMessage, aiOptions)
+          : await sendAI(trimmedMessage, aiOptions);
       setLastResponseTime(Date.now() - startTime);
       setLastTokenCount(aiResponse.data?.tokens || null);
 
@@ -165,6 +156,13 @@ export default function AIPage() {
         >
           <optgroup label="⚡ Fast (Groq Cloud)" style={{ background: '#1a1a2e', color: '#4caf50', fontWeight: 700 }}>
             {GROQ_MODELS.map(modelOption => (
+              <option key={modelOption.id} value={modelOption.id} style={{ background: '#1a1a2e', color: '#fff' }}>
+                {modelOption.emoji} {modelOption.label} ({modelOption.speed})
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label="✨ Google (Gemini)" style={{ background: '#1a1a2e', color: '#4285f4', fontWeight: 700 }}>
+            {GEMINI_MODELS.map(modelOption => (
               <option key={modelOption.id} value={modelOption.id} style={{ background: '#1a1a2e', color: '#fff' }}>
                 {modelOption.emoji} {modelOption.label} ({modelOption.speed})
               </option>
