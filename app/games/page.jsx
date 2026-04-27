@@ -19,6 +19,12 @@ const games = [
   { emoji: '🚀', title: 'Doodle Jump', description: 'Jump higher and higher!', difficulty: 'Medium', href: '/games/doodlejump' },
   { emoji: '🟦', title: 'Geometry Dash', description: 'Jump, dodge, survive!', difficulty: 'Hard', href: '/games/geodash' },
   { emoji: '🐦', title: 'Flappy Cat', description: 'Tap to fly through pipes!', difficulty: 'Hard', href: '/games/flappy' },
+  { emoji: '🧠', title: 'Memory Glitch', description: 'Find the changed words!', difficulty: 'AI', href: '/games/portal' },
+  { emoji: '⚗️', title: 'Alchemy Lab', description: 'Combine elements to discover!', difficulty: 'Fun', href: '/games/portal' },
+  { emoji: '🔍', title: 'Digital Detective', description: 'Crack the secret passcode!', difficulty: 'AI', href: '/games/portal' },
+  { emoji: '📸', title: 'Face Dodge', description: 'Move your head to dodge!', difficulty: 'Camera', href: '/games/facedodge' },
+  { emoji: '😊', title: 'Smile Game', description: 'Smile to make hearts rain!', difficulty: 'Camera', href: '/games/smilegame' },
+  { emoji: '🤚', title: 'Hand Catch', description: 'Wave your hand to catch!', difficulty: 'Camera', href: '/games/handgame' },
 ];
 
 
@@ -27,6 +33,8 @@ const difficultyColor = {
   Medium: '#ff9800',
   Hard: '#ef5350',
   Fun: '#e91e8c',
+  AI: '#b388ff',
+  Camera: '#26c6da',
   '2 Player': '#b388ff',
 };
 
@@ -80,29 +88,6 @@ export default function GamesPage() {
         ))}
       </div>
 
-      {/* Link to Visual Games */}
-      {/* Special sections */}
-      <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '60px' }}>
-        <Link href="/games/portal" style={{
-          display: 'inline-flex', alignItems: 'center', gap: '10px',
-          padding: '14px 28px', borderRadius: '50px',
-          background: 'linear-gradient(135deg, rgba(233,30,140,0.1), rgba(179,136,255,0.1))',
-          border: '1px solid rgba(179,136,255,0.3)',
-          color: '#b388ff', fontSize: '0.95rem', fontWeight: 600, textDecoration: 'none',
-          fontFamily: "'Inter', sans-serif", transition: 'all 0.2s',
-        }}>
-          ✨ Game Portal — 3 premium adventures →
-        </Link>
-        <Link href="/visual-games" style={{
-          display: 'inline-flex', alignItems: 'center', gap: '10px',
-          padding: '14px 28px', borderRadius: '50px',
-          background: 'rgba(38,198,218,0.08)', border: '1px solid rgba(38,198,218,0.3)',
-          color: '#26c6da', fontSize: '0.95rem', fontWeight: 600, textDecoration: 'none',
-          fontFamily: "'Inter', sans-serif", transition: 'all 0.2s',
-        }}>
-          👁️ Visual Games — play with your camera →
-        </Link>
-      </div>
     </div>
   );
 }

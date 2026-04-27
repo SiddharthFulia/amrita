@@ -42,18 +42,6 @@ const navItems = [
     sublabel: 'Play with me',
   },
   {
-    href: '/visual-games',
-    emoji: '👁️',
-    label: 'Visual Games',
-    sublabel: 'Camera magic',
-  },
-  {
-    href: '/games/portal',
-    emoji: '🧪',
-    label: 'Game Portal',
-    sublabel: 'Premium adventures',
-  },
-  {
     href: '/cats',
     emoji: '🐱',
     label: 'Cats',
@@ -130,6 +118,24 @@ const navItems = [
     emoji: '🔍',
     label: 'Object Detect',
     sublabel: 'AI vision',
+  },
+  {
+    href: '/imagegen',
+    emoji: '🎨',
+    label: 'AI Image Gen',
+    sublabel: 'Create images',
+  },
+  {
+    href: '/tts',
+    emoji: '🔊',
+    label: 'Text to Speech',
+    sublabel: 'AI voice',
+  },
+  {
+    href: '/imageanalyze',
+    emoji: '👁️‍🗨️',
+    label: 'Image Analyze',
+    sublabel: 'Gemini Vision',
   },
   {
     href: '/led',
