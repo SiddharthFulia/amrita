@@ -46,8 +46,17 @@ export async function analyzeImage(imageBase64, prompt = 'Describe this image in
   return post(ENDPOINTS.ANALYZE_IMAGE, { image: imageBase64, prompt, model }, { timeout: 15000 });
 }
 
-export async function generateAIImage(prompt, model) {
-  return post(ENDPOINTS.IMAGE_GEN, { prompt, model }, { timeout: 60000 });
+export async function generateAIImage(prompt, model, provider = 'cloudflare') {
+  return post(ENDPOINTS.IMAGE_GEN, { prompt, model, provider }, { timeout: 60000 });
+}
+
+export async function editAIImage(imageDataUrl, prompt, opts = {}) {
+  return post(ENDPOINTS.IMAGE_EDIT, {
+    image: imageDataUrl,
+    prompt,
+    strength: opts.strength,
+    steps: opts.steps,
+  }, { timeout: 90000 });
 }
 
 export async function textToSpeech(text, voice = 'en-US-Standard-D', lang = 'en-US') {

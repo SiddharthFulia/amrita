@@ -4,193 +4,83 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const navItems = [
+const navGroups = [
   {
-    href: '/',
-    emoji: '♥',
-    label: 'Home',
-    sublabel: 'Start here',
+    key: 'memories',
+    title: 'Our Memories',
+    items: [
+      { href: '/', emoji: '♥', label: 'Home', sublabel: 'Start here' },
+      { href: '/our-moments', emoji: '✨', label: 'Our Moments', sublabel: 'Our story' },
+      { href: '/love-notes', emoji: '💌', label: 'Love Notes', sublabel: 'Sweet words' },
+      { href: '/little-things', emoji: '🌸', label: 'Little Things', sublabel: 'What I love about you' },
+      { href: '/gallery', emoji: '📸', label: 'Gallery', sublabel: 'Our photos' },
+      { href: '/stars', emoji: '🌌', label: 'Star Map', sublabel: 'Our night sky' },
+      { href: '/tinkerbell', emoji: '🐈', label: 'Tinkerbell', sublabel: 'Her photos ♥' },
+      { href: '/music', emoji: '🎧', label: 'Our Music', sublabel: 'Spotify playlists' },
+      { href: '/surprise', emoji: '🎁', label: '12 May Surprise', sublabel: 'Coming soon...', locked: true },
+    ],
   },
   {
-    href: '/our-moments',
-    emoji: '✨',
-    label: 'Our Moments',
-    sublabel: 'Our story',
+    key: 'for-her',
+    title: 'For Her',
+    items: [
+      { href: '/cats', emoji: '🐱', label: 'Cats', sublabel: 'For you, always' },
+      { href: '/saved-cats', emoji: '🐾', label: 'Saved Cats', sublabel: 'Your collection' },
+      { href: '/tattoos', emoji: '🖤', label: 'Tattoo Ideas', sublabel: 'Find your ink' },
+      { href: '/saved-tattoos', emoji: '💉', label: 'Saved Tattoos', sublabel: 'Your collection' },
+    ],
   },
   {
-    href: '/love-notes',
-    emoji: '💌',
-    label: 'Love Notes',
-    sublabel: 'Sweet words',
+    key: 'play-create',
+    title: 'Play & Create',
+    items: [
+      { href: '/games', emoji: '🎮', label: 'Games', sublabel: 'Play with me' },
+      { href: '/karaoke', emoji: '🎶', label: 'Karaoke', sublabel: 'Sing along!' },
+      { href: '/photobooth', emoji: '📷', label: 'Photo Booth', sublabel: 'Cute selfies!' },
+      { href: '/saved-photos', emoji: '🖼️', label: 'Saved Photos', sublabel: 'Booth captures' },
+      { href: '/voice', emoji: '🎤', label: 'Voice Fun', sublabel: 'Change your voice!' },
+      { href: '/led', emoji: '💡', label: 'LED Message', sublabel: 'Scrolling sign' },
+      { href: '/troll-control', emoji: '🎛️', label: 'Troll Control', sublabel: 'Cursed UI lab' },
+    ],
   },
   {
-    href: '/little-things',
-    emoji: '🌸',
-    label: 'Little Things',
-    sublabel: 'What I love about you',
+    key: 'ai-tools',
+    title: 'AI Tools',
+    items: [
+      { href: '/imagegen', emoji: '🎨', label: 'AI Image Gen', sublabel: 'Create images' },
+      { href: '/imageanalyze', emoji: '👁️‍🗨️', label: 'Image Analyze', sublabel: 'Gemini Vision' },
+      { href: '/tts', emoji: '🔊', label: 'Text to Speech', sublabel: 'AI voice' },
+      { href: '/facefilters', emoji: '🎭', label: 'Face Filters', sublabel: 'Snapchat style!' },
+      { href: '/faceai', emoji: '🧠', label: 'Face AI', sublabel: 'OpenCV analysis' },
+      { href: '/objectdetect', emoji: '🔍', label: 'Object Detect', sublabel: 'AI vision' },
+      { href: '/whisper', emoji: '✨', label: 'Whisper', sublabel: 'Talk to AI' },
+      { href: '/ai', emoji: '🤖', label: 'Raw AI', sublabel: 'Pure Ollama' },
+    ],
   },
   {
-    href: '/gallery',
-    emoji: '📸',
-    label: 'Gallery',
-    sublabel: 'Our photos',
-  },
-  {
-    href: '/games',
-    emoji: '🎮',
-    label: 'Games',
-    sublabel: 'Play with me',
-  },
-  {
-    href: '/cats',
-    emoji: '🐱',
-    label: 'Cats',
-    sublabel: 'For you, always',
-  },
-  {
-    href: '/saved-cats',
-    emoji: '🐾',
-    label: 'Saved Cats',
-    sublabel: "Amrita's collection",
-  },
-  {
-    href: '/tattoos',
-    emoji: '🖤',
-    label: 'Tattoo Ideas',
-    sublabel: 'Find your ink',
-  },
-  {
-    href: '/saved-tattoos',
-    emoji: '💉',
-    label: 'Saved Tattoos',
-    sublabel: 'Your collection',
-  },
-  {
-    href: '/stars',
-    emoji: '🌌',
-    label: 'Star Map',
-    sublabel: 'Our night sky',
-  },
-  {
-    href: '/tinkerbell',
-    emoji: '🐈',
-    label: 'Tinkerbell',
-    sublabel: 'Her photos ♥',
-  },
-  {
-    href: '/voice',
-    emoji: '🎤',
-    label: 'Voice Fun',
-    sublabel: 'Change your voice!',
-  },
-  {
-    href: '/karaoke',
-    emoji: '🎶',
-    label: 'Karaoke',
-    sublabel: 'Sing along!',
-  },
-  {
-    href: '/photobooth',
-    emoji: '📷',
-    label: 'Photo Booth',
-    sublabel: 'Cute selfies!',
-  },
-  {
-    href: '/saved-photos',
-    emoji: '🖼️',
-    label: 'Saved Photos',
-    sublabel: 'Booth captures',
-  },
-  {
-    href: '/facefilters',
-    emoji: '🎭',
-    label: 'Face Filters',
-    sublabel: 'Snapchat style!',
-  },
-  {
-    href: '/faceai',
-    emoji: '🧠',
-    label: 'Face AI',
-    sublabel: 'OpenCV analysis',
-  },
-  {
-    href: '/objectdetect',
-    emoji: '🔍',
-    label: 'Object Detect',
-    sublabel: 'AI vision',
-  },
-  {
-    href: '/imagegen',
-    emoji: '🎨',
-    label: 'AI Image Gen',
-    sublabel: 'Create images',
-  },
-  {
-    href: '/tts',
-    emoji: '🔊',
-    label: 'Text to Speech',
-    sublabel: 'AI voice',
-  },
-  {
-    href: '/imageanalyze',
-    emoji: '👁️‍🗨️',
-    label: 'Image Analyze',
-    sublabel: 'Gemini Vision',
-  },
-  {
-    href: '/led',
-    emoji: '💡',
-    label: 'LED Message',
-    sublabel: 'Scrolling sign',
-  },
-  {
-    href: '/whisper',
-    emoji: '✨',
-    label: 'Whisper',
-    sublabel: 'Talk to AI',
-  },
-  {
-    href: '/ai',
-    emoji: '🤖',
-    label: 'Raw AI',
-    sublabel: 'Pure Ollama',
-  },
-  {
-    href: '/calm',
-    emoji: '🌙',
-    label: 'Calm Corner',
-    sublabel: 'Breathe & relax',
-  },
-  {
-    href: '/comfort',
-    emoji: '🫂',
-    label: 'Comfort Corner',
-    sublabel: 'For hard days',
-  },
-  {
-    href: '/gem',
-    emoji: '💎',
-    label: 'Your Gem',
-    sublabel: 'Growth & glow',
-  },
-  {
-    href: '/stupid-design',
-    emoji: '🧪',
-    label: 'Stupid Design',
-    sublabel: 'Cursed UI lab',
-  },
-  {
-    href: '/surprise',
-    emoji: '🎁',
-    label: '12 May Surprise',
-    sublabel: 'Coming soon...',
-    locked: true,
+    key: 'wellness',
+    title: 'Wellness',
+    items: [
+      { href: '/calm', emoji: '🌙', label: 'Calm Corner', sublabel: 'Breathe & relax' },
+      { href: '/comfort', emoji: '🫂', label: 'Comfort Corner', sublabel: 'For hard days' },
+      { href: '/gem', emoji: '💎', label: 'Your Gem', sublabel: 'Growth & glow' },
+    ],
   },
 ];
+
+// Default expansion: most expanded, wellness collapsed by default
+const defaultExpandedState = {
+  'memories': true,
+  'for-her': true,
+  'play-create': true,
+  'ai-tools': true,
+  'wellness': false,
+};
 
 export default function Sidebar({ collapsed, onToggle, isMobile = false, mobileOpen = false, onMobileClose }) {
   const pathname = usePathname();
   const [hoveredItem, setHoveredItem] = useState(null);
+  const [expandedGroups, setExpandedGroups] = useState(defaultExpandedState);
 
   const isVisible = isMobile ? mobileOpen : true;
   const sidebarWidth = isMobile ? '280px' : (collapsed ? '72px' : '260px');
@@ -200,6 +90,114 @@ export default function Sidebar({ collapsed, onToggle, isMobile = false, mobileO
     if (isMobile && onMobileClose) {
       onMobileClose();
     }
+  };
+
+  const toggleGroup = (key) => {
+    setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  // Determine which group (if any) contains the active route, so we can auto-expand it.
+  const activeGroupKey = navGroups.find((g) =>
+    g.items.some((item) => item.href === pathname)
+  )?.key;
+
+  const isGroupExpanded = (key) =>
+    key === activeGroupKey ? true : !!expandedGroups[key];
+
+  // Renders a single nav item link — shared between grouped and flat (collapsed) modes.
+  const renderNavItem = (navItem, showLabels) => {
+    const isActive = pathname === navItem.href;
+    const isHovered = hoveredItem === navItem.href;
+
+    return (
+      <Link
+        key={navItem.href}
+        href={navItem.href}
+        onClick={handleNavClick}
+        onMouseEnter={() => setHoveredItem(navItem.href)}
+        onMouseLeave={() => setHoveredItem(null)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: showLabels ? '9px 20px 9px 28px' : '13px 0',
+          justifyContent: showLabels ? 'flex-start' : 'center',
+          textDecoration: 'none',
+          margin: '1px 0',
+          position: 'relative',
+          transition: 'background 0.2s ease',
+          background: isActive
+            ? 'linear-gradient(90deg, rgba(233,30,140,0.15), transparent)'
+            : isHovered
+            ? 'rgba(255,255,255,0.04)'
+            : 'transparent',
+          borderLeft: isActive ? '2px solid #e91e8c' : '2px solid transparent',
+        }}
+        title={!showLabels ? navItem.label : undefined}
+      >
+        <span
+          style={{
+            fontSize: showLabels ? '18px' : '20px',
+            minWidth: showLabels ? '22px' : 'auto',
+            textAlign: 'center',
+            filter: isActive ? 'drop-shadow(0 0 8px rgba(233,30,140,0.9))' : 'none',
+            transition: 'filter 0.2s ease',
+            flexShrink: 0,
+          }}
+        >
+          {navItem.emoji}
+        </span>
+
+        {showLabels && (
+          <div style={{ flex: 1, overflow: 'hidden' }}>
+            <div
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '13px',
+                fontWeight: isActive ? 600 : 400,
+                color: isActive ? '#fff' : isHovered ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.6)',
+                transition: 'color 0.2s ease',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {navItem.label}
+            </div>
+            <div
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: '11px',
+                color: isActive ? 'rgba(233,30,140,0.7)' : 'rgba(255,255,255,0.22)',
+                marginTop: '1px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {navItem.sublabel}
+            </div>
+          </div>
+        )}
+
+        {/* Active dot on collapsed desktop */}
+        {isActive && !showLabels && (
+          <div
+            style={{
+              position: 'absolute',
+              right: '6px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '4px',
+              height: '4px',
+              borderRadius: '50%',
+              background: '#e91e8c',
+              boxShadow: '0 0 8px rgba(233,30,140,0.8)',
+            }}
+          />
+        )}
+      </Link>
+    );
   };
 
   return (
@@ -359,101 +357,66 @@ export default function Sidebar({ collapsed, onToggle, isMobile = false, mobileO
           </div>
         )}
 
-        {navItems.map((navItem) => {
-          const isActive = pathname === navItem.href;
-          const isHovered = hoveredItem === navItem.href;
+        {(() => {
           const showLabels = !collapsed || isMobile;
 
-          return (
-            <Link
-              key={navItem.href}
-              href={navItem.href}
-              onClick={handleNavClick}
-              onMouseEnter={() => setHoveredItem(navItem.href)}
-              onMouseLeave={() => setHoveredItem(null)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: showLabels ? '11px 20px' : '13px 0',
-                justifyContent: showLabels ? 'flex-start' : 'center',
-                textDecoration: 'none',
-                margin: '1px 0',
-                position: 'relative',
-                transition: 'background 0.2s ease',
-                background: isActive
-                  ? 'linear-gradient(90deg, rgba(233,30,140,0.15), transparent)'
-                  : isHovered
-                  ? 'rgba(255,255,255,0.04)'
-                  : 'transparent',
-                borderLeft: isActive ? '2px solid #e91e8c' : '2px solid transparent',
-              }}
-              title={!showLabels ? navItem.label : undefined}
-            >
-              <span
-                style={{
-                  fontSize: showLabels ? '18px' : '20px',
-                  minWidth: showLabels ? '22px' : 'auto',
-                  textAlign: 'center',
-                  filter: isActive ? 'drop-shadow(0 0 8px rgba(233,30,140,0.9))' : 'none',
-                  transition: 'filter 0.2s ease',
-                  flexShrink: 0,
-                }}
-              >
-                {navItem.emoji}
-              </span>
+          // Collapsed desktop: render a flat list of all items, no group headers.
+          if (!showLabels) {
+            return navGroups.flatMap((group) =>
+              group.items.map((navItem) => renderNavItem(navItem, false))
+            );
+          }
 
-              {showLabels && (
-                <div style={{ flex: 1, overflow: 'hidden' }}>
-                  <div
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: '13px',
-                      fontWeight: isActive ? 600 : 400,
-                      color: isActive ? '#fff' : isHovered ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.6)',
-                      transition: 'color 0.2s ease',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {navItem.label}
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: '11px',
-                      color: isActive ? 'rgba(233,30,140,0.7)' : 'rgba(255,255,255,0.22)',
-                      marginTop: '1px',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {navItem.sublabel}
-                  </div>
-                </div>
-              )}
-
-              {/* Active dot on collapsed desktop */}
-              {isActive && !showLabels && (
-                <div
+          // Expanded (or mobile): render grouped collapsible sections.
+          return navGroups.map((group) => {
+            const expanded = isGroupExpanded(group.key);
+            return (
+              <div key={group.key} style={{ marginBottom: '4px' }}>
+                <button
+                  onClick={() => toggleGroup(group.key)}
                   style={{
-                    position: 'absolute',
-                    right: '6px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    width: '4px',
-                    height: '4px',
-                    borderRadius: '50%',
-                    background: '#e91e8c',
-                    boxShadow: '0 0 8px rgba(233,30,140,0.8)',
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '8px 20px',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: 'rgba(255,255,255,0.45)',
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    transition: 'color 0.2s ease',
                   }}
-                />
-              )}
-            </Link>
-          );
-        })}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.75)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.45)')}
+                >
+                  <span>{group.title}</span>
+                  <span
+                    style={{
+                      fontSize: '10px',
+                      transition: 'transform 0.2s ease',
+                      transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                      display: 'inline-block',
+                      color: 'rgba(255,255,255,0.35)',
+                    }}
+                  >
+                    ›
+                  </span>
+                </button>
+
+                {expanded && (
+                  <div>
+                    {group.items.map((navItem) => renderNavItem(navItem, true))}
+                  </div>
+                )}
+              </div>
+            );
+          });
+        })()}
       </nav>
 
       {/* Footer */}

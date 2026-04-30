@@ -464,8 +464,9 @@ export default function StarsPage() {
                 cursor: 'pointer',
                 color: '#fff',
                 textAlign: 'left',
-                minWidth: 200,
+                minWidth: 'min(200px, 100%)',
                 maxWidth: 260,
+                flex: '1 1 200px',
                 flexShrink: 0,
                 transition: 'all 0.3s ease',
                 transform: isActive ? 'translateY(-4px)' : 'translateY(0)',
@@ -508,7 +509,8 @@ export default function StarsPage() {
             : '1.5px solid rgba(255,255,255,0.08)',
           borderRadius: 14,
           padding: '14px 18px',
-          minWidth: 150,
+          minWidth: 'min(150px, 100%)',
+          flex: '1 1 150px',
           flexShrink: 0,
           textAlign: 'center',
         }}>
@@ -698,7 +700,7 @@ export default function StarsPage() {
           <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginBottom: 20, flexWrap: 'wrap' }}>
             <div style={{
               background: `${PINK}12`, border: `1px solid ${PINK}30`, borderRadius: 16,
-              padding: '16px 20px', minWidth: 140, textAlign: 'center',
+              padding: '16px 20px', minWidth: 'min(140px, 100%)', flex: '1 1 140px', maxWidth: 200, textAlign: 'center',
             }}>
               <div style={{ fontSize: 32, marginBottom: 4 }}>♉</div>
               <div style={{ fontFamily: FONT_TITLE, fontSize: 16, color: PINK, marginBottom: 2 }}>Amrita</div>
@@ -711,7 +713,7 @@ export default function StarsPage() {
             }}>💕</div>
             <div style={{
               background: `${PURPLE}12`, border: `1px solid ${PURPLE}30`, borderRadius: 16,
-              padding: '16px 20px', minWidth: 140, textAlign: 'center',
+              padding: '16px 20px', minWidth: 'min(140px, 100%)', flex: '1 1 140px', maxWidth: 200, textAlign: 'center',
             }}>
               <div style={{ fontSize: 32, marginBottom: 4 }}>♍</div>
               <div style={{ fontFamily: FONT_TITLE, fontSize: 16, color: PURPLE, marginBottom: 2 }}>Siddharth</div>

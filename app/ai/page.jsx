@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { Skeleton } from 'antd';
 import { checkHealth, sendAI, sendGroq, sendGemini } from '@/utils/apis';
 import { GROQ_MODELS, GEMINI_MODELS, OLLAMA_MODELS, getModelInfo, isGroqModel, isGeminiModel } from '@/constants/models';
 
@@ -322,23 +323,19 @@ export default function AIPage() {
         ))}
 
         {isSending && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginTop: '4px', animation: 'aiFadeIn 0.3s ease' }}>
             <div style={{
               width: '26px', height: '26px', borderRadius: '8px',
               background: 'rgba(76,175,80,0.15)', border: '1px solid rgba(76,175,80,0.3)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px',
+              flexShrink: 0,
             }}>🤖</div>
             <div style={{
-              padding: '10px 16px', borderRadius: '14px 14px 14px 4px',
+              padding: '10px 14px', borderRadius: '14px 14px 14px 4px',
               background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
-              display: 'flex', gap: '4px',
+              minWidth: '200px', maxWidth: '80%', flex: '0 1 auto',
             }}>
-              {[0, 1, 2].map(dotIndex => (
-                <div key={dotIndex} style={{
-                  width: '5px', height: '5px', borderRadius: '50%', background: '#4caf50',
-                  animation: `aiDot 1.2s ease ${dotIndex * 0.2}s infinite`,
-                }} />
-              ))}
+              <Skeleton active paragraph={{ rows: 2, width: ['95%', '65%'] }} title={false} />
             </div>
           </div>
         )}

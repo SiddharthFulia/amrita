@@ -589,8 +589,8 @@ const styles = {
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '16px',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(min(160px, 100%), 1fr))',
+    gap: '12px',
   },
   card: {
     borderRadius: '16px',

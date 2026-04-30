@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.34",
+    "antd": "^6.3.7",
     "framer-motion": "^11.15.0",
     "googleapis": "^144.0.0",
     "gsap": "^3.12.5",

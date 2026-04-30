@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { Skeleton } from 'antd';
 import { textToSpeech } from '@/utils/apis';
 
 const VOICES = [
@@ -516,6 +517,23 @@ export default function TTSPage() {
             fontSize: '14px',
           }}>
             {error}
+          </div>
+        )}
+
+        {/* Loading skeleton for audio player */}
+        {loading && (
+          <div style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '16px',
+            padding: '20px',
+            backdropFilter: 'blur(12px)',
+            marginBottom: '20px',
+          }}>
+            <Skeleton.Input active block style={{ height: 48, borderRadius: 12 }} />
+            <div style={{ marginTop: 12 }}>
+              <Skeleton active paragraph={{ rows: 1, width: '100%' }} title={false} />
+            </div>
           </div>
         )}
 

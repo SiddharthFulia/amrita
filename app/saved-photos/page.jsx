@@ -222,14 +222,14 @@ export default function SavedPhotosPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07071a', padding: '40px 24px 80px', maxWidth: '960px', margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', background: '#07071a', padding: '40px 16px 80px', maxWidth: '960px', margin: '0 auto' }}>
       <style>{`
         @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
         .sphoto-card img { transition: transform 0.25s ease; }
         .sphoto-card:hover img { transform: scale(1.04); }
         @media (max-width: 600px) {
-          .sphoto-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .sphoto-btn-sm { width: 28px !important; height: 28px !important; font-size: 12px !important; }
+          .sphoto-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important; }
+          .sphoto-btn-sm { width: 32px !important; height: 32px !important; font-size: 12px !important; }
         }
       `}</style>
 
@@ -306,7 +306,7 @@ export default function SavedPhotosPage() {
 
       {/* Loading skeleton */}
       {loading && (
-        <div className="sphoto-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+        <div className="sphoto-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '12px' }}>
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} style={{
               aspectRatio: '3/4', borderRadius: '16px',
@@ -334,7 +334,7 @@ export default function SavedPhotosPage() {
 
       {/* Grid */}
       {!loading && photos.length > 0 && (
-        <div className="sphoto-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+        <div className="sphoto-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '12px' }}>
           {photos.map((photo, i) => {
             const isSelected = selected.has(photo.id);
             return (

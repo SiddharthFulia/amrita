@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import { Skeleton } from 'antd';
 import { analyzeFace, checkFaceHealth } from '@/utils/apis';
 
 const LANDMARK_GROUPS = {
@@ -494,6 +495,31 @@ export default function FaceAIPage() {
           flexDirection: 'column',
           gap: '12px',
         }}>
+          {/* Loading skeleton when no face data yet */}
+          {!faceData && serviceOnline && !cameraError && (
+            <div style={{
+              background: 'linear-gradient(135deg, #0d0d2bee, #1a1a3ecc)',
+              backdropFilter: 'blur(12px)',
+              borderRadius: '14px',
+              padding: '16px',
+              border: '1px solid #ffffff08',
+              boxShadow: '0 4px 24px #00000040',
+              marginBottom: '12px',
+            }}>
+              <div style={{
+                fontSize: '11px',
+                fontWeight: 600,
+                color: '#b388ff99',
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                marginBottom: '12px',
+              }}>
+                Analyzing face...
+              </div>
+              <Skeleton active paragraph={{ rows: 6 }} title={{ width: '40%' }} />
+            </div>
+          )}
+
           {/* Confidence */}
           <GlassCard title="Confidence">
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px' }}>

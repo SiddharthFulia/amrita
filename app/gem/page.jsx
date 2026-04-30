@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { Skeleton } from 'antd';
 
 // ─── Daily seed (same picks all day, changes at midnight) ─────────────────────
 function dailySeed() {
@@ -94,6 +95,7 @@ export default function GemPage() {
     try { return parseInt(localStorage.getItem('gem_level') || '1', 10); } catch { return 1; }
   });
   const [configurable, setConfigurable] = useState(false);
+  const [gemLoaded, setGemLoaded] = useState(false);
 
   // Interactions
   const [clickCount, setClickCount] = useState(0);
@@ -125,6 +127,7 @@ export default function GemPage() {
       renderer.setSize(W, H);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       container.appendChild(renderer.domElement);
+      setGemLoaded(true);
 
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(50, W / H, 0.1, 100);
@@ -316,6 +319,18 @@ export default function GemPage() {
           onClick={handleGemClick}
           style={{ width: '100%', height: '360px', cursor: 'pointer', borderRadius: '20px', overflow: 'hidden' }}
         />
+        {/* Skeleton while three.js loads */}
+        {!gemLoaded && (
+          <div style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            borderRadius: '20px', overflow: 'hidden',
+            background: 'linear-gradient(135deg, rgba(233,30,140,0.04), rgba(179,136,255,0.04))',
+            pointerEvents: 'none',
+          }}>
+            <Skeleton.Avatar active size={180} shape="circle" style={{ '--antd-skeleton-bg': 'rgba(233,30,140,0.1)' }} />
+          </div>
+        )}
         {/* Click hint */}
         {clickCount === 0 && (
           <div style={{

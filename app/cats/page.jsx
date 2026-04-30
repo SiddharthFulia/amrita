@@ -234,7 +234,7 @@ export default function CatsPage() {
         background: '#07071a',
         color: 'rgba(255,255,255,0.88)',
         fontFamily: "'Inter', sans-serif",
-        padding: '40px 24px 80px',
+        padding: '40px 16px 80px',
         maxWidth: '900px',
         margin: '0 auto',
       }}

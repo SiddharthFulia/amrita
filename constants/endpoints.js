@@ -6,6 +6,7 @@ export const ENDPOINTS = {
   GEMINI: '/api/gemini',
   ANALYZE_IMAGE: '/api/analyze-image',
   IMAGE_GEN: '/api/image-gen',
+  IMAGE_EDIT: '/api/image-edit',
   TTS: '/api/tts',
   SUMMARIZE: '/api/summarize',
   STATS: '/api/stats',

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import { Skeleton } from 'antd';
 import { generateAIImage } from '@/utils/apis';
 
 const QUICK_PROMPTS = [
@@ -24,6 +25,7 @@ export default function ImageGenPage() {
   const [error, setError] = useState('');
   const [history, setHistory] = useState([]);
   const [viewingHistoryImg, setViewingHistoryImg] = useState(null);
+  const [provider, setProvider] = useState('cloudflare');
   const scrollRef = useRef(null);
 
   const handleGenerate = useCallback(async (overridePrompt) => {
@@ -33,7 +35,7 @@ export default function ImageGenPage() {
     setError('');
     setImage(null);
     try {
-      const res = await generateAIImage(p.trim(), 'flux');
+      const res = await generateAIImage(p.trim(), 'flux', provider);
       const data = res?.data || res;
       if (data?.image) {
         const imgSrc = data.image.startsWith('data:') ? data.image : `data:image/png;base64,${data.image}`;
@@ -53,11 +55,20 @@ export default function ImageGenPage() {
       }
     } catch (err) {
       console.error(err);
-      setError('Model is loading, please try again in 30s');
+      const msg = err?.message || '';
+      if (msg.includes('depleted') || msg.includes('credits')) {
+        setError('Hugging Face credits depleted — switch to Cloudflare provider.');
+      } else if (msg.includes('Cloudflare') && msg.includes('configured')) {
+        setError('Cloudflare not configured on backend. Restart server with CF_ACCOUNT_ID and CF_API_TOKEN set.');
+      } else if (msg.includes('limit')) {
+        setError('Provider rate limit hit. Try the other provider.');
+      } else {
+        setError('Model is loading, please try again in 30s');
+      }
     } finally {
       setLoading(false);
     }
-  }, [prompt]);
+  }, [prompt, provider]);
 
   const handleDownload = useCallback(() => {
     const src = viewingHistoryImg || image;
@@ -116,11 +127,54 @@ export default function ImageGenPage() {
         ✨ AI Image Gen ✨
       </h1>
       <p style={{
-        color: 'rgba(255,255,255,0.45)', fontSize: '13px', margin: '0 0 28px',
+        color: 'rgba(255,255,255,0.45)', fontSize: '13px', margin: '0 0 18px',
         position: 'relative', zIndex: 1,
       }}>
         Describe anything and watch it come to life
       </p>
+
+      {/* Provider toggle */}
+      <div style={{
+        display: 'flex', gap: '6px', marginBottom: '20px',
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: '50px', padding: '4px',
+        position: 'relative', zIndex: 1,
+      }}>
+        {[
+          { id: 'cloudflare', label: 'Cloudflare', sub: 'fast • free' },
+          { id: 'huggingface', label: 'Hugging Face', sub: 'flux schnell' },
+        ].map(p => {
+          const active = provider === p.id;
+          return (
+            <button
+              key={p.id}
+              onClick={() => setProvider(p.id)}
+              disabled={loading}
+              style={{
+                padding: '8px 18px',
+                fontSize: '12px',
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 600,
+                color: active ? '#fff' : 'rgba(255,255,255,0.5)',
+                background: active
+                  ? 'linear-gradient(135deg, #e91e8c, #b388ff)'
+                  : 'transparent',
+                border: 'none',
+                borderRadius: '50px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: active ? '0 2px 12px rgba(233,30,140,0.3)' : 'none',
+                lineHeight: 1.2,
+                textAlign: 'center',
+              }}
+            >
+              <div>{p.label}</div>
+              <div style={{ fontSize: '9px', opacity: 0.7, marginTop: '1px' }}>{p.sub}</div>
+            </button>
+          );
+        })}
+      </div>
 
       {/* Prompt textarea */}
       <div style={{ width: '100%', maxWidth: '560px', position: 'relative', zIndex: 1 }}>
@@ -255,27 +309,31 @@ export default function ImageGenPage() {
         {loading ? 'Generating...' : 'Generate Image'}
       </button>
 
-      {/* Loading placeholder */}
+      {/* Loading placeholder — antd Skeleton */}
       {loading && (
         <div style={{
           width: '100%', maxWidth: '512px', marginTop: '28px',
-          aspectRatio: '1 / 1', borderRadius: '20px',
-          background: 'linear-gradient(135deg, rgba(233,30,140,0.08), rgba(179,136,255,0.08))',
-          border: '1px solid rgba(255,255,255,0.06)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexDirection: 'column', gap: '14px',
-          animation: 'imagegen-pulse 2s ease-in-out infinite',
           position: 'relative', zIndex: 1,
         }}>
           <div style={{
-            width: '48px', height: '48px',
-            border: '3px solid rgba(233,30,140,0.2)',
-            borderTopColor: '#e91e8c', borderRadius: '50%',
-            animation: 'imagegen-spin 1s linear infinite',
-          }} />
-          <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>
-            This may take 10-30 seconds...
-          </span>
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '20px',
+            padding: '12px',
+            backdropFilter: 'blur(12px)',
+          }}>
+            <Skeleton.Image active style={{ width: '100%', height: '480px', borderRadius: '14px' }} />
+          </div>
+          <div style={{
+            marginTop: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: '8px', color: 'rgba(255,255,255,0.5)', fontSize: '13px',
+          }}>
+            <span style={{
+              display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%',
+              background: '#e91e8c', animation: 'imagegen-pulse 1.2s ease-in-out infinite',
+            }} />
+            Generating with {provider === 'cloudflare' ? 'Cloudflare' : 'Hugging Face'}...
+          </div>
         </div>
       )}
 

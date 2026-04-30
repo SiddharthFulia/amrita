@@ -355,7 +355,7 @@ export default function MemoryGlitch({ onBack }) {
               {[
                 { difficulty: 'easy', label: 'Easy', color: '#4caf50', desc: '3 diffs' },
                 { difficulty: 'medium', label: 'Medium', color: '#ff9800', desc: '5 diffs' },
-                { difficulty: 'hard', label: 'Hard', color: '#ef5350', desc: '7 diffs' },
+                { difficulty: 'hard', label: 'Hard', color: '#ef5350', desc: '~10 subtle diffs' },
               ].map(levelOption => (
                 <motion.button
                   key={levelOption.difficulty}

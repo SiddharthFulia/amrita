@@ -15,7 +15,7 @@ export default function HomePage() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '60px 40px 40px',
+          padding: 'clamp(40px, 6vw, 60px) clamp(16px, 4vw, 40px) 40px',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -27,8 +27,8 @@ export default function HomePage() {
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            width: '600px',
-            height: '600px',
+            width: 'min(600px, 100vw)',
+            height: 'min(600px, 100vw)',
             borderRadius: '50%',
             background: 'radial-gradient(circle, rgba(233,30,140,0.12) 0%, rgba(179,136,255,0.06) 50%, transparent 70%)',
             pointerEvents: 'none',
@@ -45,7 +45,7 @@ export default function HomePage() {
           <div
             style={{
               fontFamily: "'Dancing Script', cursive",
-              fontSize: '20px',
+              fontSize: 'clamp(15px, 4vw, 20px)',
               color: 'rgba(255,255,255,0.5)',
               letterSpacing: '0.2em',
               marginBottom: '12px',
@@ -57,7 +57,7 @@ export default function HomePage() {
           <h1
             style={{
               fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: 'clamp(52px, 8vw, 96px)',
+              fontSize: 'clamp(44px, 12vw, 96px)',
               fontWeight: 700,
               lineHeight: 1.05,
               background: 'linear-gradient(135deg, #ffffff 0%, #ff6baa 40%, #b388ff 80%, #ffffff 100%)',
@@ -72,7 +72,7 @@ export default function HomePage() {
           <div
             style={{
               fontFamily: "'Dancing Script', cursive",
-              fontSize: '26px',
+              fontSize: 'clamp(20px, 5vw, 26px)',
               color: 'rgba(255,255,255,0.6)',
               fontStyle: 'italic',
             }}
@@ -105,7 +105,7 @@ export default function HomePage() {
       {/* ─── SECTION 2: Countdown ────────────────────────────────── */}
       <section
         style={{
-          padding: '80px 40px',
+          padding: 'clamp(56px, 10vw, 80px) clamp(16px, 4vw, 40px)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -179,7 +179,7 @@ export default function HomePage() {
       {/* ─── SECTION 3: Love Quote ───────────────────────────────── */}
       <section
         style={{
-          padding: '80px 40px',
+          padding: 'clamp(56px, 10vw, 80px) clamp(16px, 4vw, 40px)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -232,7 +232,7 @@ export default function HomePage() {
       {/* ─── SECTION 4: Cuddling Bears ───────────────────────────── */}
       <section
         style={{
-          padding: '80px 40px',
+          padding: 'clamp(56px, 10vw, 80px) clamp(16px, 4vw, 40px)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -308,7 +308,7 @@ export default function HomePage() {
       {/* ─── SECTION 5: Quick Navigation Cards ──────────────────── */}
       <section
         style={{
-          padding: '80px 40px',
+          padding: 'clamp(56px, 10vw, 80px) clamp(16px, 4vw, 40px)',
           maxWidth: '900px',
           margin: '0 auto',
         }}
@@ -444,7 +444,7 @@ export default function HomePage() {
       {/* ─── Footer ──────────────────────────────────────────────── */}
       <footer
         style={{
-          padding: '60px 40px',
+          padding: 'clamp(40px, 8vw, 60px) clamp(16px, 4vw, 40px)',
           textAlign: 'center',
           borderTop: '1px solid rgba(255,255,255,0.06)',
           marginTop: '40px',

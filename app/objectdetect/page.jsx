@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import { Skeleton } from 'antd';
 
 const CLASS_EMOJIS = {
   person: '🧑', cat: '🐱', dog: '🐶', car: '🚗', bottle: '🍶', cup: '☕',
@@ -425,19 +426,13 @@ export default function ObjectDetectPage() {
           background: 'rgba(255,255,255,0.04)',
           borderRadius: 16,
           border: '1px solid rgba(233,30,140,0.2)',
-          padding: '48px 24px',
+          padding: '32px 24px',
           textAlign: 'center',
           marginBottom: 20,
         }}>
-          {/* Spinner */}
-          <div style={{
-            width: 48, height: 48, margin: '0 auto 20px',
-            border: '3px solid rgba(233,30,140,0.2)',
-            borderTopColor: '#e91e8c',
-            borderRadius: '50%',
-            animation: 'spin 0.8s linear infinite',
-          }} />
-          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+            <Skeleton.Image active style={{ width: 240, height: 180, borderRadius: 12 }} />
+          </div>
           <p style={{ color: '#b388ff', fontSize: 16, fontWeight: 600, margin: 0 }}>{statusText}</p>
           <div style={{
             marginTop: 16, height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 2,

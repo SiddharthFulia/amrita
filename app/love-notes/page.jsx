@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function LoveNotesPage() {
   return (
-    <div style={{ minHeight: '100vh', padding: '60px 40px 80px' }}>
+    <div style={{ minHeight: '100vh', padding: 'clamp(40px, 8vw, 60px) clamp(16px, 4vw, 40px) 80px' }}>
 
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '70px' }}>
@@ -58,7 +58,7 @@ export default function LoveNotesPage() {
         <div
           style={{
             position: 'relative',
-            padding: '44px 48px',
+            padding: 'clamp(28px, 6vw, 44px) clamp(24px, 6vw, 48px)',
             background: 'linear-gradient(135deg, rgba(255,215,0,0.07) 0%, rgba(255,193,7,0.04) 100%)',
             border: '1px solid rgba(255,215,0,0.3)',
             borderRadius: '24px',
@@ -213,7 +213,7 @@ export default function LoveNotesPage() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(260px, 100%), 1fr))',
             gap: '20px',
           }}
         >
@@ -285,7 +285,7 @@ export default function LoveNotesPage() {
           maxWidth: '600px',
           margin: '80px auto 0',
           textAlign: 'center',
-          padding: '40px',
+          padding: 'clamp(24px, 6vw, 40px)',
           background: 'rgba(233,30,140,0.06)',
           border: '1px solid rgba(233,30,140,0.15)',
           borderRadius: '24px',

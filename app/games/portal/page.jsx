@@ -243,15 +243,15 @@ export default function PortalPage() {
                 transition: 'all 0.3s ease',
                 transform: hoveredGame === game.id ? 'translateY(-4px)' : 'translateY(0)',
                 boxShadow: hoveredGame === game.id ? `0 12px 40px ${game.accent}15` : 'none',
-                display: 'flex', gap: '24px', alignItems: 'center',
+                display: 'flex', gap: 'clamp(14px, 3vw, 24px)', alignItems: 'center',
               }}
             >
               {/* Emoji */}
               <div style={{
-                fontSize: 'clamp(40px, 8vw, 56px)',
+                fontSize: 'clamp(36px, 8vw, 56px)',
                 lineHeight: 1,
                 flexShrink: 0,
-                width: '72px', height: '72px',
+                width: 'clamp(56px, 14vw, 72px)', height: 'clamp(56px, 14vw, 72px)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: `${game.accent}10`,
                 borderRadius: '20px',

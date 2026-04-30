@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { Skeleton } from 'antd';
 import { checkHealth, sendWhisper, sendGroq, sendGemini, fetchStats } from '@/utils/apis';
 import { GROQ_MODELS, GEMINI_MODELS, OLLAMA_MODELS, getModelInfo, isGroqModel, isGeminiModel } from '@/constants/models';
 
@@ -383,23 +384,14 @@ export default function WhisperPage() {
         ))}
 
         {isSending && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginTop: '4px', animation: 'whisperFadeIn 0.3s ease' }}>
+            <Skeleton.Avatar active size={28} shape="circle" />
             <div style={{
-              width: '28px', height: '28px', borderRadius: '50%',
-              background: 'linear-gradient(135deg, #e91e8c, #b388ff)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px',
-            }}>✨</div>
-            <div style={{
-              padding: '12px 18px', borderRadius: '18px 18px 18px 4px',
+              padding: '12px 16px', borderRadius: '18px 18px 18px 4px',
               background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.08)',
-              display: 'flex', gap: '4px',
+              minWidth: '180px', maxWidth: '75%', flex: '0 1 auto',
             }}>
-              {[0, 1, 2].map(dotIndex => (
-                <div key={dotIndex} style={{
-                  width: '6px', height: '6px', borderRadius: '50%', background: '#b388ff',
-                  animation: `whisperDot 1.2s ease ${dotIndex * 0.2}s infinite`,
-                }} />
-              ))}
+              <Skeleton active paragraph={{ rows: 2, width: ['90%', '60%'] }} title={false} />
             </div>
           </div>
         )}

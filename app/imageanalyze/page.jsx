@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import Link from 'next/link';
+import { Skeleton } from 'antd';
 import { analyzeImage } from '@/utils/apis';
 
 const QUICK_PROMPTS = [
@@ -587,15 +588,18 @@ export default function ImageAnalyzePage() {
             </div>
 
             {loading ? (
-              <div
-                style={{
-                  textAlign: 'center',
-                  padding: '30px 0',
-                  fontSize: '2.5rem',
-                  animation: 'pulse-brain 1s ease-in-out infinite',
-                }}
-              >
-                {'\uD83E\uDDE0'}
+              <div style={{ padding: '8px 0' }}>
+                <div
+                  style={{
+                    textAlign: 'center',
+                    fontSize: '1.5rem',
+                    marginBottom: '12px',
+                    animation: 'pulse-brain 1s ease-in-out infinite',
+                  }}
+                >
+                  {'\uD83E\uDDE0'}
+                </div>
+                <Skeleton active paragraph={{ rows: 4 }} title={false} />
               </div>
             ) : (
               <div

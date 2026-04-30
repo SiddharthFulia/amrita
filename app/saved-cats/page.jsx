@@ -190,7 +190,7 @@ export default function SavedCatsPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', padding: '40px 24px 80px', maxWidth: '960px', margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', padding: '40px 16px 80px', maxWidth: '960px', margin: '0 auto' }}>
       <style>{`
         @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
         .scat-card img { transition: transform 0.2s ease; }

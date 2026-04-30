@@ -16,8 +16,8 @@ function LittleThingCard({ item, index }) {
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '20px',
-        padding: '20px 24px',
+        gap: 'clamp(12px, 3vw, 20px)',
+        padding: 'clamp(14px, 3vw, 20px) clamp(16px, 4vw, 24px)',
         background: 'rgba(255,255,255,0.03)',
         border: '1px solid rgba(255,255,255,0.07)',
         borderRadius: '16px',
@@ -74,7 +74,7 @@ function LittleThingCard({ item, index }) {
 
 export default function LittleThingsPage() {
   return (
-    <div style={{ minHeight: '100vh', padding: '60px 40px 80px' }}>
+    <div style={{ minHeight: '100vh', padding: 'clamp(40px, 8vw, 60px) clamp(16px, 4vw, 40px) 80px' }}>
 
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '70px' }}>
@@ -146,7 +146,7 @@ export default function LittleThingsPage() {
       >
         <div
           style={{
-            padding: '36px 40px',
+            padding: 'clamp(24px, 5vw, 36px) clamp(20px, 5vw, 40px)',
             background: 'rgba(179,136,255,0.06)',
             border: '1px solid rgba(179,136,255,0.15)',
             borderRadius: '24px',

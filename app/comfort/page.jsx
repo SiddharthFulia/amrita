@@ -165,7 +165,7 @@ export default function ComfortPage() {
       <section
         style={{
           background: 'linear-gradient(180deg, rgba(233,30,140,0.08) 0%, transparent 100%)',
-          padding: '60px 24px 50px',
+          padding: '60px clamp(16px, 4vw, 24px) 50px',
           textAlign: 'center',
         }}
       >
@@ -196,7 +196,7 @@ export default function ComfortPage() {
         style={{
           maxWidth: '500px',
           margin: '0 auto',
-          padding: '48px 24px',
+          padding: '48px clamp(16px, 4vw, 24px)',
           textAlign: 'center',
         }}
       >
@@ -292,7 +292,7 @@ export default function ComfortPage() {
         style={{
           maxWidth: '500px',
           margin: '0 auto',
-          padding: '48px 24px',
+          padding: '48px clamp(16px, 4vw, 24px)',
           textAlign: 'center',
         }}
       >
@@ -386,7 +386,7 @@ export default function ComfortPage() {
         style={{
           maxWidth: '560px',
           margin: '0 auto',
-          padding: '48px 24px',
+          padding: '48px clamp(16px, 4vw, 24px)',
           textAlign: 'center',
         }}
       >
@@ -502,7 +502,7 @@ export default function ComfortPage() {
         style={{
           maxWidth: '600px',
           margin: '0 auto',
-          padding: '48px 24px',
+          padding: '48px clamp(16px, 4vw, 24px)',
           textAlign: 'center',
         }}
       >
@@ -521,7 +521,7 @@ export default function ComfortPage() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))',
             gap: '14px',
           }}
         >

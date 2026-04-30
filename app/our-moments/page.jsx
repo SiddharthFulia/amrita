@@ -18,13 +18,15 @@ function TimelineCard({ event, index }) {
         gap: '0',
         marginBottom: '0',
         position: 'relative',
+        flexWrap: 'wrap',
       }}
     >
       {/* Card side */}
       <div
         style={{
-          flex: 1,
-          padding: isLeft ? '0 40px 0 0' : '0 0 0 40px',
+          flex: '1 1 240px',
+          minWidth: 0,
+          padding: isLeft ? '0 clamp(12px, 4vw, 40px) 0 0' : '0 0 0 clamp(12px, 4vw, 40px)',
           display: 'flex',
           justifyContent: isLeft ? 'flex-end' : 'flex-start',
         }}
@@ -32,7 +34,8 @@ function TimelineCard({ event, index }) {
         <div
           style={{
             maxWidth: '340px',
-            padding: '28px 28px',
+            width: '100%',
+            padding: 'clamp(18px, 4vw, 28px)',
             background: isLocked
               ? 'rgba(179,136,255,0.06)'
               : 'rgba(255,255,255,0.04)',
@@ -147,7 +150,7 @@ function TimelineCard({ event, index }) {
 
 export default function OurMomentsPage() {
   return (
-    <div style={{ minHeight: '100vh', padding: '60px 40px 80px' }}>
+    <div style={{ minHeight: '100vh', padding: 'clamp(40px, 8vw, 60px) clamp(16px, 4vw, 40px) 80px' }}>
 
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '80px' }}>
@@ -227,7 +230,8 @@ export default function OurMomentsPage() {
         <div
           style={{
             display: 'inline-block',
-            padding: '24px 40px',
+            maxWidth: '100%',
+            padding: 'clamp(20px, 5vw, 24px) clamp(20px, 5vw, 40px)',
             background: 'rgba(233,30,140,0.06)',
             border: '1px solid rgba(233,30,140,0.2)',
             borderRadius: '20px',
