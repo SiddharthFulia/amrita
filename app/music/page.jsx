@@ -73,7 +73,8 @@ export default function MusicPage() {
 
   // ═══ Search
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchType, setSearchType] = useState('track'); // track | album | artist
+  const [searchResults, setSearchResults] = useState({ tracks: [], albums: [], artists: [] });
   const [searching, setSearching] = useState(false);
   const searchTimerRef = useRef(null);
 
@@ -315,24 +316,25 @@ export default function MusicPage() {
     }
   }, [profile, tab, libraryTab, playlists, likedTracks]);
 
-  // ─── Search debounced
+  // ─── Search debounced — fetches tracks, albums, AND artists in one call
   useEffect(() => {
     clearTimeout(searchTimerRef.current);
     if (!searchQuery.trim() || !profile) {
-      setSearchResults([]); setSearching(false);
+      setSearchResults({ tracks: [], albums: [], artists: [] });
+      setSearching(false);
       return;
     }
     setSearching(true);
     searchTimerRef.current = setTimeout(async () => {
       try {
-        const data = await be(`/api/spotify/search?q=${encodeURIComponent(searchQuery)}&type=track&limit=10`);
-        setSearchResults(data.tracks?.items || []);
-        // Note: bulk-check saved status (/me/tracks/contains) is locked behind
-        // Spotify Extended Quota for new apps. We rely on the Liked Songs list
-        // loaded in Library tab to populate likedMap. Tracks not in that list
-        // simply show as unliked here — clicking the heart still works.
+        const data = await be(`/api/spotify/search?q=${encodeURIComponent(searchQuery)}&type=track,album,artist&limit=10`);
+        setSearchResults({
+          tracks: data.tracks?.items || [],
+          albums: data.albums?.items || [],
+          artists: data.artists?.items || [],
+        });
       } catch {
-        setSearchResults([]);
+        setSearchResults({ tracks: [], albums: [], artists: [] });
       } finally {
         setSearching(false);
       }
@@ -345,11 +347,11 @@ export default function MusicPage() {
     // Mobile or non-premium: switch to embed
     if (!useCustomPlayer) {
       if (uri) {
-        const m = uri.match(/spotify:(track|playlist|album):([A-Za-z0-9]+)/);
+        const m = uri.match(/spotify:(track|playlist|album|artist):([A-Za-z0-9]+)/);
         if (m) { setEmbedKind(m[1]); setEmbedTrackId(m[2]); return; }
       }
       if (contextUri) {
-        const m = contextUri.match(/spotify:(playlist|album):([A-Za-z0-9]+)/);
+        const m = contextUri.match(/spotify:(playlist|album|artist):([A-Za-z0-9]+)/);
         if (m) { setEmbedKind(m[1]); setEmbedTrackId(m[2]); return; }
       }
       if (trackId) { setEmbedKind('track'); setEmbedTrackId(trackId); return; }
@@ -357,8 +359,14 @@ export default function MusicPage() {
     }
     if (!deviceId) { setSdkError('Player not ready yet...'); return; }
     const body = { deviceId };
-    if (uri) body.uris = [uri];
-    else if (contextUri) body.contextUri = contextUri;
+    // Spotify rule: only TRACK uris go in uris[]. Album/playlist/artist must use contextUri.
+    if (uri && uri.startsWith('spotify:track:')) {
+      body.uris = [uri];
+    } else if (uri) {
+      body.contextUri = uri;
+    } else if (contextUri) {
+      body.contextUri = contextUri;
+    }
 
     const attemptPlay = async () => be('/api/spotify/play', { method: 'POST', body: JSON.stringify(body) });
 
@@ -396,6 +404,40 @@ export default function MusicPage() {
   const seek = (ms) => playerRef.current?.seek(ms);
   const setVol = (v) => { setVolume(v); playerRef.current?.setVolume(v); };
 
+  // ─── Shuffle / Repeat (server-side, follows playerState updates)
+  const shuffle = !!playerState?.shuffle;
+  const repeat = playerState?.repeat_mode === 1 ? 'context'
+    : playerState?.repeat_mode === 2 ? 'track' : 'off';
+
+  const toggleShuffle = useCallback(async () => {
+    try {
+      await be('/api/spotify/shuffle', {
+        method: 'POST',
+        body: JSON.stringify({ state: !shuffle, deviceId }),
+      });
+    } catch (err) { showToast(err.message); }
+  }, [shuffle, deviceId, showToast]);
+
+  const cycleRepeat = useCallback(async () => {
+    const next = repeat === 'off' ? 'context' : repeat === 'context' ? 'track' : 'off';
+    try {
+      await be('/api/spotify/repeat', {
+        method: 'POST',
+        body: JSON.stringify({ state: next, deviceId }),
+      });
+    } catch (err) { showToast(err.message); }
+  }, [repeat, deviceId, showToast]);
+
+  const addToQueue = useCallback(async (track) => {
+    try {
+      await be('/api/spotify/queue', {
+        method: 'POST',
+        body: JSON.stringify({ uri: track.uri, deviceId }),
+      });
+      showToast(`Queued: ${track.name}`);
+    } catch (err) { showToast(err.message); }
+  }, [deviceId, showToast]);
+
   // ─── Like / unlike
   const toggleLike = useCallback(async (trackId) => {
     if (!trackId) return;
@@ -416,11 +458,16 @@ export default function MusicPage() {
   const openCollectionDetail = useCallback(async (kind, id) => {
     setOpenCollection({ kind, id, data: null });
     setCollectionLoading(true);
+    // Scroll up so user actually SEES the new view
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     try {
-      const path = kind === 'album' ? `/api/spotify/album/${id}` : `/api/spotify/playlist/${id}`;
+      const path = kind === 'album' ? `/api/spotify/album/${id}`
+        : kind === 'artist' ? `/api/spotify/artist/${id}`
+        : `/api/spotify/playlist/${id}`;
       const data = await be(path);
       setOpenCollection({ kind, id, data });
-      // bulk saved-tracks check is locked by Spotify quota; rely on pre-loaded likedMap
     } catch {
       setOpenCollection({ kind, id, data: { error: true } });
     } finally {
@@ -539,85 +586,72 @@ export default function MusicPage() {
           <UnauthHero />
         )}
 
-        {profile && tab === 'home' && (
-          <HomeTab
-            profile={profile}
-            recentlyPlayed={recentlyPlayed}
-            yourPlaylists={yourPlaylists}
-            topArtists={topArtists}
-            topTracks={topTracks}
+        {/* Detail view takes priority over any tab when an item is opened */}
+        {profile && openCollection ? (
+          <CollectionDetailView
+            collection={openCollection}
+            loading={collectionLoading}
+            onBack={() => setOpenCollection(null)}
             onPlay={playUri}
+            likedMap={likedMap}
+            onLike={toggleLike}
+            onDownload={downloadPreview}
+            onAddToQueue={addToQueue}
             onOpenCollection={openCollectionDetail}
-            likedMap={likedMap}
-            onLike={toggleLike}
-            onDownload={downloadPreview}
-            onAddToPlaylist={(t) => setAddToPlaylistTrack(t)}
           />
-        )}
+        ) : (
+          <>
+            {profile && tab === 'home' && (
+              <HomeTab
+                profile={profile}
+                recentlyPlayed={recentlyPlayed}
+                yourPlaylists={yourPlaylists}
+                topArtists={topArtists}
+                topTracks={topTracks}
+                onPlay={playUri}
+                onOpenCollection={openCollectionDetail}
+                likedMap={likedMap}
+                onLike={toggleLike}
+                onDownload={downloadPreview}
+                onAddToQueue={addToQueue}
+              />
+            )}
 
-        {profile && tab === 'library' && (
-          openCollection ? (
-            <CollectionDetailView
-              collection={openCollection}
-              loading={collectionLoading}
-              onBack={() => setOpenCollection(null)}
-              onPlay={playUri}
-              likedMap={likedMap}
-              onLike={toggleLike}
-              onDownload={downloadPreview}
-              onAddToPlaylist={(t) => setAddToPlaylistTrack(t)}
-              isOwn={openCollection?.kind === 'playlist' && openCollection?.data?.owner?.id === profile?.id}
-              onDelete={() => deletePlaylist(openCollection.id, openCollection.data?.name)}
-            />
-          ) : (
-            <LibraryTab
-              libraryTab={libraryTab}
-              setLibraryTab={setLibraryTab}
-              libraryFilter={libraryFilter}
-              setLibraryFilter={setLibraryFilter}
-              playlists={filteredPlaylists}
-              likedTracks={filteredLiked}
-              onOpenCollection={openCollectionDetail}
-              onPlay={playUri}
-              likedMap={likedMap}
-              onLike={toggleLike}
-              onDownload={downloadPreview}
-              onCreatePlaylist={() => setShowCreateModal(true)}
-              onAddToPlaylist={(track) => setAddToPlaylistTrack(track)}
-            />
-          )
-        )}
+            {profile && tab === 'library' && (
+              <LibraryTab
+                libraryTab={libraryTab}
+                setLibraryTab={setLibraryTab}
+                libraryFilter={libraryFilter}
+                setLibraryFilter={setLibraryFilter}
+                playlists={filteredPlaylists}
+                likedTracks={filteredLiked}
+                onOpenCollection={openCollectionDetail}
+                onPlay={playUri}
+                likedMap={likedMap}
+                onLike={toggleLike}
+                onDownload={downloadPreview}
+                onCreatePlaylist={() => setShowCreateModal(true)}
+                onAddToQueue={addToQueue}
+              />
+            )}
 
-        {profile && tab === 'search' && (
-          <SearchTab
-            query={searchQuery}
-            setQuery={setSearchQuery}
-            results={searchResults}
-            loading={searching}
-            onAddToPlaylist={(t) => setAddToPlaylistTrack(t)}
-            onPlay={playUri}
-            likedMap={likedMap}
-            onLike={toggleLike}
-            onDownload={downloadPreview}
-          />
-        )}
-
-        {/* Open collection from Home tab too */}
-        {profile && tab === 'home' && openCollection && (
-          <div style={{ marginTop: 32 }}>
-            <CollectionDetailView
-              collection={openCollection}
-              loading={collectionLoading}
-              onBack={() => setOpenCollection(null)}
-              onPlay={playUri}
-              likedMap={likedMap}
-              onLike={toggleLike}
-              onDownload={downloadPreview}
-              onAddToPlaylist={(t) => setAddToPlaylistTrack(t)}
-              isOwn={openCollection?.kind === 'playlist' && openCollection?.data?.owner?.id === profile?.id}
-              onDelete={() => deletePlaylist(openCollection.id, openCollection.data?.name)}
-            />
-          </div>
+            {profile && tab === 'search' && (
+              <SearchTab
+                query={searchQuery}
+                setQuery={setSearchQuery}
+                searchType={searchType}
+                setSearchType={setSearchType}
+                onOpenCollection={openCollectionDetail}
+                results={searchResults}
+                loading={searching}
+                onAddToQueue={addToQueue}
+                onPlay={playUri}
+                likedMap={likedMap}
+                onLike={toggleLike}
+                onDownload={downloadPreview}
+              />
+            )}
+          </>
         )}
       </div>
 
@@ -636,6 +670,10 @@ export default function MusicPage() {
           sdkError={sdkError}
           likedMap={likedMap}
           onLike={toggleLike}
+          onShuffle={toggleShuffle}
+          onRepeat={cycleRepeat}
+          shuffle={shuffle}
+          repeat={repeat}
         />
       )}
 
@@ -734,6 +772,10 @@ export default function MusicPage() {
         .music-search-shell input {
           caret-color: #1ed760;
         }
+        .music-artist-link:hover {
+          color: #fff !important;
+          text-decoration: underline;
+        }
         @keyframes toast-in {
           from { opacity: 0; transform: translate(-50%, 12px); }
           to { opacity: 1; transform: translate(-50%, 0); }
@@ -810,7 +852,7 @@ function UnauthHero() {
 }
 
 // ─── HOME TAB
-function HomeTab({ profile, recentlyPlayed, yourPlaylists, topArtists, topTracks, onPlay, onOpenCollection, likedMap, onLike, onDownload, onAddToPlaylist }) {
+function HomeTab({ profile, recentlyPlayed, yourPlaylists, topArtists, topTracks, onPlay, onOpenCollection, likedMap, onLike, onDownload, onAddToQueue }) {
   return (
     <div>
       <h2 style={greetingStyle}>{greeting()}, {profile.display_name?.split(' ')[0] || 'love'}</h2>
@@ -856,9 +898,9 @@ function HomeTab({ profile, recentlyPlayed, yourPlaylists, topArtists, topTracks
               key={a.id}
               image={pickImage(a.images)}
               title={a.name}
-              subtitle={a.genres?.slice(0, 2).join(', ') || `${(a.followers?.total || 0).toLocaleString()} followers`}
+              subtitle="Artist"
               circular
-              onClick={() => onPlay({ uri: a.uri })}
+              onClick={() => onOpenCollection('artist', a.id)}
             />
           ))}
           {topArtists?.length === 0 && <EmptyHint>Listen more to build your top artists.</EmptyHint>}
@@ -881,7 +923,9 @@ function HomeTab({ profile, recentlyPlayed, yourPlaylists, topArtists, topTracks
                 liked={!!likedMap[t.id]}
                 onLike={() => onLike(t.id)}
                 onDownload={() => onDownload(t)}
-                onAddToPlaylist={onAddToPlaylist ? () => onAddToPlaylist(t) : undefined}
+                onAddToQueue={onAddToQueue ? () => onAddToQueue(t) : undefined}
+              onOpenArtist={onOpenCollection ? (artistId) => onOpenCollection('artist', artistId) : undefined}
+                onOpenArtist={onOpenCollection ? (artistId) => onOpenCollection('artist', artistId) : undefined}
               />
             ))}
           </div>
@@ -892,7 +936,7 @@ function HomeTab({ profile, recentlyPlayed, yourPlaylists, topArtists, topTracks
 }
 
 // ─── LIBRARY TAB
-function LibraryTab({ libraryTab, setLibraryTab, libraryFilter, setLibraryFilter, playlists, likedTracks, onOpenCollection, onPlay, likedMap, onLike, onDownload, onCreatePlaylist, onAddToPlaylist }) {
+function LibraryTab({ libraryTab, setLibraryTab, libraryFilter, setLibraryFilter, playlists, likedTracks, onOpenCollection, onPlay, likedMap, onLike, onDownload, onAddToQueue }) {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
@@ -966,7 +1010,9 @@ function LibraryTab({ libraryTab, setLibraryTab, libraryFilter, setLibraryFilter
                   liked={!!likedMap[t.id]}
                   onLike={() => onLike(t.id)}
                   onDownload={() => onDownload(t)}
-                  onAddToPlaylist={onAddToPlaylist ? () => onAddToPlaylist(t) : undefined}
+                  onAddToQueue={onAddToQueue ? () => onAddToQueue(t) : undefined}
+              onOpenArtist={onOpenCollection ? (artistId) => onOpenCollection('artist', artistId) : undefined}
+                onOpenArtist={onOpenCollection ? (artistId) => onOpenCollection('artist', artistId) : undefined}
                 />
               );
             })}
@@ -978,11 +1024,16 @@ function LibraryTab({ libraryTab, setLibraryTab, libraryFilter, setLibraryFilter
 }
 
 // ─── SEARCH TAB
-function SearchTab({ query, setQuery, results, loading, onPlay, likedMap, onLike, onDownload, onAddToPlaylist }) {
+function SearchTab({ query, setQuery, results, loading, onPlay, onOpenCollection, likedMap, onLike, onDownload, onAddToQueue, searchType, setSearchType }) {
+  const tracks = results?.tracks || [];
+  const albums = results?.albums || [];
+  const artists = results?.artists || [];
+  const totalCount = tracks.length + albums.length + artists.length;
+
   return (
     <div>
       <div className="music-search-shell" style={{
-        ...searchBoxStyle, padding: '14px 18px', marginBottom: 24,
+        ...searchBoxStyle, padding: '14px 18px', marginBottom: 16,
         borderRadius: 16,
       }}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
@@ -1001,38 +1052,95 @@ function SearchTab({ query, setQuery, results, loading, onPlay, likedMap, onLike
         )}
       </div>
 
+      {/* Type tabs */}
+      {query.trim() && (
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+          {[
+            { key: 'track', label: 'Songs', count: tracks.length },
+            { key: 'album', label: 'Albums', count: albums.length },
+            { key: 'artist', label: 'Artists', count: artists.length },
+          ].map(t => (
+            <button
+              key={t.key}
+              onClick={() => setSearchType(t.key)}
+              style={subTabBtnStyle(searchType === t.key)}
+            >
+              {t.label}
+              {t.count > 0 && (
+                <span style={{ marginLeft: 6, opacity: 0.7, fontSize: 11 }}>{t.count}</span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
       {!query.trim() ? (
         <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,0.4)' }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🎧</div>
           <p style={{ fontSize: 14 }}>Search for a song, artist, or album...</p>
         </div>
       ) : loading ? (
-        <SkeletonRows count={8} />
-      ) : results.length === 0 ? (
+        searchType === 'track' ? <SkeletonRows count={8} /> : <CardGridSkeleton />
+      ) : totalCount === 0 ? (
         <EmptyHint>No results for "{query}"</EmptyHint>
+      ) : searchType === 'track' ? (
+        tracks.length === 0 ? <EmptyHint>No songs found.</EmptyHint> : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {tracks.map((t, i) => (
+              <TrackRow
+                key={t.id}
+                rank={i + 1}
+                track={t}
+                onPlay={() => onPlay({ uri: t.uri, trackId: t.id })}
+                liked={!!likedMap[t.id]}
+                onLike={() => onLike(t.id)}
+                onDownload={() => onDownload(t)}
+                onAddToQueue={onAddToQueue ? () => onAddToQueue(t) : undefined}
+              onOpenArtist={onOpenCollection ? (artistId) => onOpenCollection('artist', artistId) : undefined}
+                onOpenArtist={onOpenCollection ? (artistId) => onOpenCollection('artist', artistId) : undefined}
+                showDownload
+              />
+            ))}
+          </div>
+        )
+      ) : searchType === 'album' ? (
+        albums.length === 0 ? <EmptyHint>No albums found.</EmptyHint> : (
+          <div style={cardGridStyle}>
+            {albums.map(a => (
+              <Card
+                key={a.id}
+                image={pickImage(a.images)}
+                title={a.name}
+                subtitle={a.artists?.map(x => x.name).join(', ') || a.album_type || 'Album'}
+                onClick={() => onOpenCollection && onOpenCollection('album', a.id)}
+                fullWidth
+              />
+            ))}
+          </div>
+        )
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {results.map((t, i) => (
-            <TrackRow
-              key={t.id}
-              rank={i + 1}
-              track={t}
-              onPlay={() => onPlay({ uri: t.uri, trackId: t.id })}
-              liked={!!likedMap[t.id]}
-              onLike={() => onLike(t.id)}
-              onDownload={() => onDownload(t)}
-              onAddToPlaylist={onAddToPlaylist ? () => onAddToPlaylist(t) : undefined}
-              showDownload
-            />
-          ))}
-        </div>
+        artists.length === 0 ? <EmptyHint>No artists found.</EmptyHint> : (
+          <div style={cardGridStyle}>
+            {artists.map(a => (
+              <Card
+                key={a.id}
+                image={pickImage(a.images)}
+                title={a.name}
+                subtitle="Artist"
+                circular
+                onClick={() => onOpenCollection && onOpenCollection('artist', a.id)}
+                fullWidth
+              />
+            ))}
+          </div>
+        )
       )}
     </div>
   );
 }
 
 // ─── COLLECTION DETAIL (playlist or album)
-function CollectionDetailView({ collection, loading, onBack, onPlay, likedMap, onLike, onDownload, onAddToPlaylist, isOwn, onDelete }) {
+function CollectionDetailView({ collection, loading, onBack, onPlay, likedMap, onLike, onDownload, onAddToQueue, onOpenCollection }) {
   const { kind, id, data } = collection;
   if (loading || !data) {
     return (
@@ -1062,11 +1170,19 @@ function CollectionDetailView({ collection, loading, onBack, onPlay, likedMap, o
   const image = pickImage(data.images);
   const tracks = kind === 'album'
     ? (data.tracks?.items || [])
+    : kind === 'artist'
+    ? []
     : (data.tracks?.items || []).map(it => it.track).filter(Boolean);
 
   const playAll = () => {
-    onPlay({ contextUri: `spotify:${kind}:${id}` });
+    if (kind === 'artist') {
+      onPlay({ uri: data.uri || `spotify:artist:${id}` });
+    } else {
+      onPlay({ contextUri: `spotify:${kind}:${id}` });
+    }
   };
+
+  const albums = kind === 'artist' ? (data.albums?.items || []) : [];
 
   return (
     <div>
@@ -1074,9 +1190,12 @@ function CollectionDetailView({ collection, loading, onBack, onPlay, likedMap, o
 
       <div style={{ display: 'flex', gap: 24, marginTop: 16, flexWrap: 'wrap', alignItems: 'flex-end' }}>
         {image ? (
-          <img src={image} alt="" style={collectionArtStyle} />
+          <img src={image} alt="" style={{
+            ...collectionArtStyle,
+            borderRadius: kind === 'artist' ? '50%' : 12,
+          }} />
         ) : (
-          <div style={{ ...collectionArtStyle, background: 'linear-gradient(135deg, #1ed760, #b388ff)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 64 }}>♪</div>
+          <div style={{ ...collectionArtStyle, background: 'linear-gradient(135deg, #1ed760, #b388ff)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 64, borderRadius: kind === 'artist' ? '50%' : 12 }}>♪</div>
         )}
         <div style={{ flex: 1, minWidth: 240 }}>
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
@@ -1091,8 +1210,17 @@ function CollectionDetailView({ collection, loading, onBack, onPlay, likedMap, o
           )}
           <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
             {kind === 'playlist' && (data.owner?.display_name || '')}
-            {kind === 'album' && (data.artists?.map(a => a.name).join(', ') || '')}
-            {kind === 'album' && tracks.length > 0 && ` · ${tracks.length} tracks`}
+            {kind === 'album' && data.artists?.map((a, i) => (
+              <span key={a.id}>
+                <button
+                  onClick={() => onOpenCollection && onOpenCollection('artist', a.id)}
+                  style={artistLinkStyle}
+                >{a.name}</button>
+                {i < data.artists.length - 1 && ', '}
+              </span>
+            ))}
+            {kind === 'album' && tracks.length > 0 && ` · ${tracks.length} ${tracks.length === 1 ? 'track' : 'tracks'}`}
+            {kind === 'artist' && albums.length > 0 && `${albums.length} albums`}
           </div>
           <div style={{ marginTop: 16 }}>
             <button onClick={playAll} style={bigPlayBtnStyle}>▶ Play</button>
@@ -1100,6 +1228,40 @@ function CollectionDetailView({ collection, loading, onBack, onPlay, likedMap, o
         </div>
       </div>
 
+      {kind === 'artist' && (
+        <div style={{ marginTop: 32 }}>
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: '#fff', margin: '0 0 14px' }}>Top Tracks</h3>
+          <iframe
+            src={`https://open.spotify.com/embed/artist/${id}?utm_source=generator&theme=0`}
+            width="100%" height="380"
+            frameBorder="0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            style={{ borderRadius: 12, border: 'none', display: 'block' }}
+            title={data.name}
+          />
+
+          {albums.length > 0 && (
+            <>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: '#fff', margin: '32px 0 14px' }}>Albums</h3>
+              <div style={cardGridStyle}>
+                {albums.map(a => (
+                  <Card
+                    key={a.id}
+                    image={pickImage(a.images)}
+                    title={a.name}
+                    subtitle={`${a.album_type || 'album'} · ${(a.release_date || '').slice(0, 4)}`}
+                    onClick={() => onOpenCollection && onOpenCollection('album', a.id)}
+                    fullWidth
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {kind !== 'artist' && (
       <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 4 }}>
         {tracks.length === 0 ? (
           kind === 'playlist' ? (
@@ -1125,18 +1287,20 @@ function CollectionDetailView({ collection, loading, onBack, onPlay, likedMap, o
               liked={!!likedMap[t.id]}
               onLike={() => onLike(t.id)}
               onDownload={() => onDownload(t)}
-              onAddToPlaylist={onAddToPlaylist ? () => onAddToPlaylist(t) : undefined}
+              onAddToQueue={onAddToQueue ? () => onAddToQueue(t) : undefined}
+              onOpenArtist={onOpenCollection ? (artistId) => onOpenCollection('artist', artistId) : undefined}
               hideAlbum={kind === 'album'}
             />
           ))
         )}
       </div>
+      )}
     </div>
   );
 }
 
 // ─── BOTTOM PLAYER
-function BottomPlayer({ state, volume, onTogglePlay, onNext, onPrev, onSeek, onVolume, sdkError, likedMap, onLike }) {
+function BottomPlayer({ state, volume, onTogglePlay, onNext, onPrev, onSeek, onVolume, sdkError, likedMap, onLike, onShuffle, onRepeat, shuffle, repeat }) {
   const track = state?.track_window?.current_track;
   const isPaused = state?.paused !== false;
   const position = state?.position || 0;
@@ -1190,10 +1354,18 @@ function BottomPlayer({ state, volume, onTogglePlay, onNext, onPrev, onSeek, onV
 
       {/* Center controls */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: '2 1 360px', gap: 6, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button onClick={onShuffle} title="Shuffle"
+            style={{ ...iconBtnStyle(shuffle ? '#1ed760' : 'rgba(255,255,255,0.5)'), flexShrink: 0, fontSize: 14 }}>
+            ⇄
+          </button>
           <button onClick={onPrev} style={ctrlBtn(false)}>⏮</button>
           <button onClick={onTogglePlay} style={ctrlBtn(true)}>{isPaused ? '▶' : '⏸'}</button>
           <button onClick={onNext} style={ctrlBtn(false)}>⏭</button>
+          <button onClick={onRepeat} title={`Repeat: ${repeat}`}
+            style={{ ...iconBtnStyle(repeat !== 'off' ? '#1ed760' : 'rgba(255,255,255,0.5)'), flexShrink: 0, fontSize: 14 }}>
+            {repeat === 'track' ? '🔂' : '🔁'}
+          </button>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
           <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', minWidth: 30, textAlign: 'right' }}>{formatTime(localPos)}</span>
@@ -1295,7 +1467,7 @@ function Card({ image, title, subtitle, onClick, fullWidth, circular }) {
   );
 }
 
-function TrackRow({ rank, track, onPlay, liked, onLike, onDownload, onAddToPlaylist, showDownload, hideAlbum }) {
+function TrackRow({ rank, track, onPlay, liked, onLike, onDownload, onAddToPlaylist, onAddToQueue, onOpenArtist, showDownload, hideAlbum }) {
   const [hover, setHover] = useState(false);
   const img = pickImage(track.album?.images, false);
   return (
@@ -1324,7 +1496,16 @@ function TrackRow({ rank, track, onPlay, liked, onLike, onDownload, onAddToPlayl
           {track.name}
         </div>
         <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {track.artists?.map(a => a.name).join(', ')}
+          {track.artists?.map((a, i) => (
+            <span key={a.id || i}>
+              {onOpenArtist && a.id ? (
+                <button onClick={(e) => { e.stopPropagation(); onOpenArtist(a.id); }} style={artistLinkStyle} className="music-artist-link">
+                  {a.name}
+                </button>
+              ) : a.name}
+              {i < track.artists.length - 1 && ', '}
+            </span>
+          ))}
         </div>
       </div>
       {!hideAlbum && (
@@ -1332,6 +1513,15 @@ function TrackRow({ rank, track, onPlay, liked, onLike, onDownload, onAddToPlayl
           className="track-album">
           {track.album?.name}
         </div>
+      )}
+      {onAddToQueue && (
+        <button
+          onClick={onAddToQueue}
+          style={{ ...iconBtnStyle('rgba(255,255,255,0.5)'), flexShrink: 0 }}
+          title="Add to queue"
+        >
+          +
+        </button>
       )}
       <button
         onClick={onLike}
@@ -1615,6 +1805,11 @@ const titleStyle = {
 const greetingStyle = {
   fontSize: 'clamp(1.6rem, 4vw, 2rem)', fontWeight: 800, color: '#fff',
   margin: '0 0 24px', letterSpacing: '-0.01em',
+};
+const artistLinkStyle = {
+  background: 'transparent', border: 'none', padding: 0, margin: 0,
+  color: 'inherit', font: 'inherit', cursor: 'pointer',
+  textDecoration: 'none', fontWeight: 500,
 };
 const profileChipBtnStyle = {
   display: 'flex', alignItems: 'center', gap: 8,
