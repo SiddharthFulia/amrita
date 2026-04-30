@@ -1168,8 +1168,13 @@ function CollectionDetailView({ collection, loading, onBack, onPlay, likedMap, o
   }
 
   const image = pickImage(data.images);
+  // For albums, Spotify omits the album field on each track item to save bytes.
+  // Backfill it from the parent album so TrackRow can render the cover thumbnail.
   const tracks = kind === 'album'
-    ? (data.tracks?.items || [])
+    ? (data.tracks?.items || []).map(t => ({
+        ...t,
+        album: t.album || { images: data.images, name: data.name, id: data.id },
+      }))
     : kind === 'artist'
     ? []
     : (data.tracks?.items || []).map(it => it.track).filter(Boolean);
